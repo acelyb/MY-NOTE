@@ -15,3 +15,16 @@ vscode关于markdown说明
 <https://code.visualstudio.com/docs/languages/markdown>
 
 ## 3. LaTex代码块
+
+## 4. 正文
+
+这是正文
+*斜体*
+**加粗**
+行内代码 `printf()`
+<u>下划线</u>
+:smile:
+$\theta = x^2$
+H~2~O
+X^2^
+==高亮==
