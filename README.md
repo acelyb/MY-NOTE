@@ -1,0 +1,2 @@
+# MY-NOTE
+learning note
