@@ -6,17 +6,7 @@
 
 初步看，markdown 可以兼容 LaTex 中的公式。但不确定是否支持 LaTex 的排版方式
 
-## 2. 相关链接
-
-markdown 中使用LaTex公式
-<https://www.cnblogs.com/bubcs/p/12736151.html>
-
-vscode 关于 markdown 说明
-<https://code.visualstudio.com/docs/languages/markdown>
-
-## 3. LaTex 与 Markdown
-
-## 4. Markdown 基础
+## 2. Markdown 基础
 
 ### 1. 标题
 
@@ -107,6 +97,10 @@ _ _ _
 下划线可以通过 HTML 的 `<u>` 标签来实现：
 
 <u>下划线</u>
+
+#### 高亮
+
+==高亮==
 
 #### 注脚
 
@@ -256,6 +250,8 @@ int main() {
 
 更多图片使用方法参照网上方法，如 <https://www.zhihu.com/question/23378396>
 
+许多方法并不可用，具体效果有差异
+
 以下为演示
 
 ![](https://raw.githubusercontent.com/acelyb/images/main/img/IMG_9745(20210315-125356).JPG)
@@ -270,16 +266,127 @@ int main() {
 ![](https://raw.githubusercontent.com/acelyb/images/main/img/IMG_9746(20200916-160836).JPG)
 </div>
 
-## 5. Markdown 进阶
+### 11. 表格
+
+制作表格使用 | 来分隔不同单元格，使用 - 来分割表头和其他行
+
+对齐方式：
+
+1. -: 设置内容和标题栏居右对齐
+2. :- 设置内容和标题栏居左对齐
+3. :-: 设置内容和标题栏居中对齐
+
+|  表头  |  表头  |
+|  ---  |  ---  |
+| 单元格 | 单元格 |
+
+| 居左对齐 | 居中对齐 | 居右对齐 |
+| :---- | :----: | ----: |
+| 单元格 | 单元格 | 单元格 |
+| 单元格 | 单元格 | 单元格 |
+
+## 3. Markdown 进阶
+
+### 1. 表情
 
 表情 :smile:
 
+to be continued
+
+### 2. 公式
+
+#### 行内公式
+
 行内公式 $\theta = x^2$
 
-下标 H~2~O
+#### LaTex公式
+
+当你需要在编辑器中插入数学公式时，可以使用两个美元符 $$ 包裹 TeX 或 LaTeX 格式的数学公式来实现。提交后，问答和文章页会根据需要加载 Mathjax 对数学公式进行渲染
+
+$\sum\limits_{i=0}^{n}i^2$
+
+### 3. 文本
+
+#### 加入上下标
+
+##### 上标
 
 X^2^
 
-==高亮==
+上标<sup>TM</sup>
 
->高亮
+##### 下标
+
+H~2~O
+
+CO<sub>2</sub>
+
+#### 改变字体、大小、颜色
+
+<font face="黑体">我是黑体字</font>
+
+<font face="幼圆">我是幼圆字</font>
+
+<font color=red>我是红色</font>
+
+<font color=yellow>我是黄色</font>
+
+<font color=blue>我是蓝色</font>
+
+<font size=1>我是尺寸</font>
+
+<font face="幼圆" color=green size=1>幼圆 绿色 尺寸为1</font>
+
+<table><tr><td bgcolor=yellow>背景色 黄色 </td></tr></table>
+
+<center>居中</center>
+
+<p align="right">右对齐</p>
+
+### 4. 支持的 HTML 元素
+
+不在 Markdown 涵盖范围内的标签，都可以直接再文档里用 HTML 撰写
+
+目前支持的 HTML 元素有：`<kbd> <b> <i> <em> <sup> <br>` 等
+
+### 5. 转义
+
+Markdown 使用了很多特殊符号来表示特定的意义，如果需要显示特定的符号则需要使用转移字符，Markdown 使用反斜杠转义特殊字符
+
+Markdown 支持以下这些符号前面加上反斜杠来帮助插入普通的符号：
+
+    \   反斜线
+    `   反引号
+    *   星号
+    _   下划线
+    {}  花括号
+    []  方括号
+    ()  小括号
+    #   井字号
+    +   加号
+    -   减号
+    .   英文句点
+    !   感叹号
+
+### 6. 流程图
+
+to be continued
+
+### 7. 代办事项
+
+- [x] test1
+- [ ] test2
+- [ ] test3
+
+
+## 4. LaTex 与 Markdown
+
+to be continued
+
+## 5. 相关链接
+
+markdown 中使用LaTex公式
+<https://www.cnblogs.com/bubcs/p/12736151.html>
+
+vscode 关于 markdown 说明
+<https://code.visualstudio.com/docs/languages/markdown>
