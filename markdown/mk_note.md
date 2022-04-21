@@ -254,9 +254,21 @@ int main() {
 
 图片使用 PicGo + GitHub 作为图床
 
+更多图片使用方法参照网上方法，如 <https://www.zhihu.com/question/23378396>
+
+以下为演示
+
 ![](https://raw.githubusercontent.com/acelyb/images/main/img/IMG_9745(20210315-125356).JPG)
 
 <img src='https://raw.githubusercontent.com/acelyb/images/main/img/IMG_9745(20210315-125356).JPG#pic_center' width=50%></img>
+
+![](https://raw.githubusercontent.com/acelyb/images/main/img/IMG_9746(20200916-160836).JPG){:width="50%"}
+
+<img src="https://raw.githubusercontent.com/acelyb/images/main/img/IMG_9746(20200916-160836).JPG" width=50% alt="pic_name" align=center />
+
+<div align="center">
+![](https://raw.githubusercontent.com/acelyb/images/main/img/IMG_9746(20200916-160836).JPG)
+</div>
 
 ## 5. Markdown 进阶
 
