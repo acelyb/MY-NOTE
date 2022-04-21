@@ -194,9 +194,71 @@ Markdown 区块的引用是在段落开头使用 > 符号，后面紧跟一个�
     > 列表中使用区块
 * 第二项
 
-## 5. Markdown 进阶
+### 8. 代码
+
+如果是段落上的一个函数或者片段的代码可以用反引号把它包起来
 
 行内代码 `printf()`
+
+代码区块使用4个空格或者一个制表符
+
+    print
+
+也可以用 ``` 包裹一段代码，并指定一种语言（也可以不指定）
+
+```c
+include<stdio.h>
+int main() {
+    printf("Hello World!");
+    return 0;
+}
+```
+
+### 9. 链接
+
+这是一个链接[Google](https://www.google.com)
+
+直接使用链接地址：<https://www.google.com>
+
+高级链接：通过变量来设置一个链接，变量赋值在文档末尾进行
+
+这个链接用 idgoogle 作为网址变量[Google][idgoogle]
+
+这个链接用 idbing 作为网址变量[Bing][idbing]
+
+然后在文档的结尾处为变量赋值
+
+[idgoogle]: https://www.google.com
+
+[idbing]: https://cn.bing.com/
+
+### 10. 图片
+
+图片语法格式如下：
+
+1. 开头一个感叹号
+2. 接着一个方括号，里面放上图片的替代文字
+3. 接着一个普通括号，里面放上图片的网址，最后还可以用引号包住并加上选择性的 'title' 属性的文字
+
+利用 markdown 在编写文档时插入图片是默认靠左，有些时候将图片设置为居中时可以更加美观，这时就需要在图片的信息前边添加如下语句：
+
+    <div align=center>![Alt pic] (http:...)
+    
+    如果想将图片位于右侧，只需要将center改为right
+
+设置图片大小
+
+    <img src="http:..." width = "100" height = "100" div align=right />
+
+如上格式，在图片的最后添加 width = "100" height = "100"，就可以设置图片的大小。也可以在后面输入百分比为多少，如 width = 20% height = 20%
+
+图片使用 PicGo + GitHub 作为图床
+
+![](https://raw.githubusercontent.com/acelyb/images/main/img/IMG_9745(20210315-125356).JPG)
+
+<img src='https://raw.githubusercontent.com/acelyb/images/main/img/IMG_9745(20210315-125356).JPG#pic_center' width=50%></img>
+
+## 5. Markdown 进阶
 
 表情 :smile:
 
