@@ -546,8 +546,201 @@ template <> 返回类型 类模板名<特化的数据类型>::特化成员函数
 
 所以在混合使用 C 语言和 C++ 编程的时候一定要使用`extern "C"`修饰。
 
-## 函数使用
+## 函数
 
-### dlopen
+### 动态调用 dlopen + dlsym
 
-<https://www.cnblogs.com/sleepylulu/p/12029467.html>
+参考:
+1. [博客1](https://www.cnblogs.com/sleepylulu/p/12029467.html)
+2. [博客2](http://c.biancheng.net/view/8044.html)
+
+### decltype
+
+`decltype`被称作类型说明符，它的作用是选择并返回操作数的数据类型
+
+#### decltype + 变量
+
+当使用`decltype(var)`的形式时，`decltype`会直接返回变量的类型
+
+```cpp
+const int ci = 0, &cj = ci;
+
+// x的类型是const int
+decltype(ci) x = 0;
+
+// y的类型是const int &
+decltype(cj) y = x;
+```
+
+#### decltype + 表达式
+
+当使用`decltype(expr)`的形式时，`decltype`会返回表达式结果对应的类型
+
+```cpp
+int i = 42, *p = &i, &r = i;
+
+// r + 0是一个表达式
+// 算术表达式返回右值
+// b是一个int类型
+decltype(r + 0) b;
+
+// c是一个int &
+decltype(*p) c = i;
+```
+
+#### decltype + 函数
+
+我们可以使用`decltype`获得函数`add_to`的类型（`add_to`定义见“函数类型”）：
+
+```cpp
+decltype(add_to) *pf = add_to;
+```
+
+当使用`decltype(func_name)`的形式时，`decltype`会返回对应的函数类型，不会自动转换成相应的函数指针
+
+参考[博客](https://blog.csdn.net/u014609638/article/details/106987131/)
+
+### 函数类型
+
+主要作用是为了定义函数指针
+
+```cpp
+// 声明了一个函数类型
+using FuncType = int(int &, int);
+
+// 下面的函数就是上面的类型
+int add_to(int &des, int ori);
+
+// 声明了一个FuncType类型的指针
+// 并使用函数add_to初始化
+FuncType *pf = add_to;
+
+int a = 4;
+
+// 通过函数指针调用add_to
+pf(a, 2);
+```
+
+## 数据类型
+
+### 强制转换
+
+#### static_cast
+
+基本等价于隐式转换的一种类型转换运算符，`static_cast`可用于需要明确隐式转换的地方。
+
+可用于低风险的转换。
+
+#### const_cast
+
+`const_cast`的对象类型必须为指针引用或指向对象的指针
+
+通过`const_cast`运算符，也只能将`const type*`转换为`type*`，将`const type&`转换为`type&`
+
+也就是说源类型和目标类型除了 const 属性不同，其他地方完全相同
+
+##### 用法1
+
+```cpp
+int main()
+{
+	const int a = 1;
+	int*b = const_cast<int*>(&a);
+	*b = 5;
+	std::cout << a;
+}
+```
+
+断点查看运行到`*b = 5;`时，`a`的值被设置成5，但最后 cout 的值仍为1
+
+对于 const 数据，我们要做这样的保证：决不能对 const 数据进行重新赋值
+
+如果我们不想修改 const 变量的值，那我们又为什么要“去 const”呢？
+
+原因是，我们可能调用了一个参数不是 const 的函数，而我们要传进去的实际参数却是 const 的，但是我们知道这个函数是不会对参数做修改的，于是我们就需要使用 const_static 去除 const 限定，以便函数能够接受这个实际参数
+
+##### 用法2
+
+常成员函数的 this 指针为 const xxx 型，即指向的地方的数据不能变，于是使用 const_cast
+
+```cpp
+class father
+{public:
+	virtual void func()const
+	{
+		const_cast<father*>(this)->aa = 1;
+	}
+	int aa;
+};
+```
+
+#### dynamic_cast
+
+定义两个简单的类
+
+```cpp
+class father
+{
+};
+class son:public father
+{
+public:
+	int num;
+};
+```
+
+将父类指针转换为子类指针
+
+```cpp
+int main()
+{
+  father f1;
+  son s1;
+  father* pfather=&f1;
+  son* pson = &s1;
+  // 错误 "father *"类型的值不能用于初始化"son *"类型的实体
+  son* pson = pfather;
+}
+```
+
+此时，`pson`虽然为子类指针，但他实际指向的是父类对象的空间，编译器认为可能通过该指针访问到此空间中不存在的部分，因此编译不能通过
+
+因此使用 dynamic_cast 通过 RTTI（运行时类别识别）来做转换，而 RTTI 通过虚函数来实现，因此在父类里添加一个虚函数
+
+```cpp
+class father
+{
+	virtual void func() {};
+};
+```
+
+此时再做转换，即使访问了不存在的对象在编译阶段将不会出错
+
+```cpp
+int main()
+{
+  father f1;
+  son s1;
+  father* pfather = &f1;
+  son* pson = &s1;
+  pson = dynamic_cast<son*>(pfather);
+  // 错误
+  pson->num = 1;
+}
+```
+
+#### reinterpret_cast
+
+执行各种高风险转换，如整型转指针，各种类型的指针转换，父类子类指针的转换
+
+```cpp
+int i = 1;
+int* a = reinterpret_cast<int*>i;
+```
+
+等价于 C 中的强制转换
+
+```c
+int i=1;
+int*a=(int*)i;
+```

@@ -6,4 +6,4 @@
 
 > 2022-06-08
 >
-> 1. C 语言结构体指针 <http://c.biancheng.net/view/2033.html>
+> 1. C 语言结构体指针（[参考链接](http://c.biancheng.net/view/2033.html)）
