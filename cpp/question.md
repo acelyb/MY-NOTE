@@ -14,4 +14,5 @@
 - [x] 函数后跟 const
 - [x] new malloc
 - [x] .o .so
-- [x] #ifndef #define #endif 
+- [x] #ifndef #define #endif
+- [ ] 重载 operator
