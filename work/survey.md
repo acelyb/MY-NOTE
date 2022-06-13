@@ -1,10 +1,8 @@
-# SURVEY
+# 多文件链接
 
-## 多文件链接
+## CUDA TOOLKIT
 
-### CUDA TOOLKIT
-
-#### Separate Compilation
+### Separate Compilation
 
 device 相关的编译将分为两部：
 
@@ -15,7 +13,7 @@ device 相关的编译将分为两部：
 
 对比 Whole Program Compilation，我们称其 device code 为 executable device code，意思是编译后的 device code 在 host object 中已经定位好了，一直到生成可执行文件都是不需要重新定位的
 
-#### Virtual and Real Architectures
+### Virtual and Real Architectures
 
 ```bash
 nvcc x.cu --gpu-architecture=compute_50 --gpu-code=sm_50
@@ -27,11 +25,14 @@ compute_xx 就是对应 GPU 的 Virtual Architecture，而 sm_xx 就是对应 GP
 
 CUDA 程序编译时，首先会根据你指定的 Virtual Architecture 选项生成 .ptx 文件，然后再根据 Real Architecture 的选项将 .ptx 文件编译成 .cubin 文件，最终再经过一系列处理 .cubin 文件会链接到目标产物中
 
-#### Just-in-Time Compilation
+### Just-in-Time Compilation
 
 CUDA 中的 JIT 就是在 CUDA 程序运行时，将 .ptx 文件根据目标平台编译为对应的 .cubin 文件，并链接到目标产物中
 
-#### 链接
+### 参考文献
 
 1. [NVCC 官方文档](https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#examples)（第六章）
-2. [博客1](https://polobymulberry.github.io/2019/03/04/CUDA%E5%AD%A6%E4%B9%A0%E7%B3%BB%E5%88%97(1)%20%7C%20%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5%E7%AF%87/)
+2. [CUDA Binary 官方文档](https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html)
+3. [博客1](https://polobymulberry.github.io/2019/03/04/CUDA%E5%AD%A6%E4%B9%A0%E7%B3%BB%E5%88%97(1)%20%7C%20%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5%E7%AF%87/)
+4. [博客2](https://blog.csdn.net/jinking01/article/details/105388149)
+5. [博客3](https://tech.meituan.com/2015/01/22/linker.html)
