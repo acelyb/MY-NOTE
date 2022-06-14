@@ -29,10 +29,58 @@ CUDA 程序编译时，首先会根据你指定的 Virtual Architecture 选项�
 
 CUDA 中的 JIT 就是在 CUDA 程序运行时，将 .ptx 文件根据目标平台编译为对应的 .cubin 文件，并链接到目标产物中
 
-### 参考文献
+## 多个目标文件的链接、静态链接、动态链接
+
+### 链接概述
+
+如下图所示为最基本的静态链接过程示意图。每个模块的源代码文件（如.c）文件经过编译器编译成目标文件（Object File，一般扩展名为.o或.obj）。目标文件和 库（Library）一起链接形成最终的可执行文件
+
+其中，最常见的库就是运行时库（Runtime Library），它是支持程序运行的基本函数的集合。库本质上是一组目标文件的包，由一些最常用的代码编译成目标文件后打包而成
+
+```mermaid
+flowchart TD
+    sc1(Source Code a.c) --> P1(Processing cpp)
+    hd(Header Files *.h) --> P1
+    hd --> P2
+    sc2(Source Code b.c) --> P2(Processing cpp)
+    P1 --> C1(Compilation gcc)
+    P2 --> C2(Compilation gcc)
+    C1 --> A1(Assembly as)
+    C2 --> A2(Assembly as)
+    A1 --> OF1
+    A2 --> OF2
+    subgraph LINKER
+    OF1(Object File a.o) --> link(Linking ld)
+    lib(Library libc.a ctr1.o ...) --> link
+    OF2(Object File b.o) --> link
+    link --> ex(Executable ab)
+    end
+```
+
+链接过程主要包含了三个步骤：
+
+1. 地址与空间分配（Address and Storage Allocation）
+2. 符号解析（Symbol Resolution）
+3. 重定位（Relocation）
+
+### 地址与空间分配
+
+对于多个输入目标文件，链接器如何将它们的各个节合并到输出文件呢？或者说，输出文件中的空间如何分配给输入文件
+
+#### 按序叠加
+
+一个最简单的方案就是将输入的文件按序叠加。虽然这种方法非常简单，但是它存在一个问题：在有很多输入文件的情况下，输出文件会有很多零散的节。这种做法非常浪费空间，因为每个节都需要有一定的地址和空间对齐要求。x86硬件的对齐要求是4KB。如果一个节的大小只有1个字节，它也要在内存在重用4KB。这样会造成大量内部碎片
+
+#### 合并相似节
+
+一个更加实际的方法便是合并相同性质的节，比如：将所有输入文件的 .text节合并到输出文件的 text段（注意，此时出现了段和节两个概念）
+
+to be continued...
+
+## 参考文献
 
 1. [NVCC 官方文档](https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#examples)（第六章）
 2. [CUDA Binary 官方文档](https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html)
-3. [博客1](https://polobymulberry.github.io/2019/03/04/CUDA%E5%AD%A6%E4%B9%A0%E7%B3%BB%E5%88%97(1)%20%7C%20%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5%E7%AF%87/)
-4. [博客2](https://blog.csdn.net/jinking01/article/details/105388149)
-5. [博客3](https://tech.meituan.com/2015/01/22/linker.html)
+3. [博客 CUDA学习系列(1) | 编译链接篇](https://polobymulberry.github.io/2019/03/04/CUDA%E5%AD%A6%E4%B9%A0%E7%B3%BB%E5%88%97(1)%20%7C%20%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5%E7%AF%87/)
+4. [博客 计算机那些事(5)——多个目标文件的链接、静态链接、动态链接](https://blog.csdn.net/jinking01/article/details/105388149)
+5. [博客 高级语言的编译：链接及装载过程介绍](https://tech.meituan.com/2015/01/22/linker.html)
