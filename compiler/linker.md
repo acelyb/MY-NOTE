@@ -177,3 +177,5 @@ to be continued...
 # 参考链接
 
 1. [链接器、链接过程及相关概念解析](https://blog.csdn.net/yueguangmuyu/article/details/116710102)
+2. [彻底理解链接器 1](https://zhuanlan.zhihu.com/p/369036368)
+3. [彻底理解链接器 2](https://zhuanlan.zhihu.com/p/369039101)
