@@ -14,3 +14,6 @@
 >> * 2XIR 中全局变量 addvar 操作中根据 VAR_EXTERN 添加 var 的属性，需要根据是否有初始化等属性去判断
 >> * xoc/var.h union 中加入 extern 相关属性
 >> * elf 处理时 判断 var属性 putglobaldata 中 continue
+
+> 2022-06-16
+> 1. bug 解决提测前要自己测一遍，如果经手多的情况需要注意是否所有 patch 都已合入
