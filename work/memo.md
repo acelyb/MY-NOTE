@@ -20,3 +20,11 @@
 
 > 2022-06-19
 > 1. loadKernelConfig
+
+> 2022-06-23
+> 1. 注意内存对齐
+> 2. 减少值传递
+> 3. 注意内存管理
+> 4. 不做修改的参数要做常量引用
+> 5. 申请完内存需要对内存进行拷贝
+> 6. 测试时注意检查内存（valgrind / valgrind --show-leak-kinds=yes --log-file=v.log ./kernel_param）
