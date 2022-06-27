@@ -742,3 +742,23 @@ int* a = reinterpret_cast<int*>i;
 int i=1;
 int*a=(int*)i;
 ```
+
+# 宏
+
+## 取整
+
+### 向下取整
+
+Return the down number of aligned at specified width. `ALIGN_DOWN(13, 4)` would return 12.
+
+`#define ALIGN_DOWN(size, align)  ((size) & ~((align) - 1))`
+
+计算`size`以`align`为倍数的下界数
+
+### 向上取整
+
+Return the most contiguous size aligned at specified width. `ALIGN_UP(13, 4)` would return 16.
+
+`ALIGN_UP(size, align)  (((size) + (align) - 1) & ~((align) - 1))`
+
+计算`size`以`align`为倍数的上界数
