@@ -31,3 +31,12 @@
 
 > **QUESTION**
 > - [ ] 数组指针与数组的用法
+
+# 2022-06-28
+
+> **QUESTION**
+> - [ ] int argc, char** argv
+> - [ ] git commit --amend
+
+> **TO DO LIST**
+> - [ ] 学习写脚本

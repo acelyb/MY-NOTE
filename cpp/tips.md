@@ -762,3 +762,10 @@ Return the most contiguous size aligned at specified width. `ALIGN_UP(13, 4)` wo
 `ALIGN_UP(size, align)  (((size) + (align) - 1) & ~((align) - 1))`
 
 计算`size`以`align`为倍数的上界数
+
+注：`size`应当为2的 n 次方，即2, 4, 8, 16...
+
+### 参考链接
+
+1. [Linux中_ALIGN宏背后的原理](https://blog.csdn.net/wangpeihuixyz/article/details/40593619)
+2. [C 数据对齐算法](https://blog.csdn.net/sean_8180/article/details/84675716)

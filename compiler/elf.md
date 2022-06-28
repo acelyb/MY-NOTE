@@ -105,3 +105,6 @@ Section 部分主要存放的是机器指令代码和数据，通常我们比较
 # 参考链接
 
 1. [ELF文件介绍](https://blog.csdn.net/nirendao/article/details/123883856)
+2. [ELFIO - C++ library for reading and generating ELF files
+](http://elfio.sourceforge.net/)
+3. [ELF Tutorial and User Manual](http://elfio.sourceforge.net/elfio.pdf)
