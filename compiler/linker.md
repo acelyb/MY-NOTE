@@ -270,9 +270,16 @@ void foo() {
 
 to be continued...
 
+# GNU linker
+
+# LLD - The LLVM Linker
+
 # 参考链接
 
 1. [链接器、链接过程及相关概念解析](https://blog.csdn.net/yueguangmuyu/article/details/116710102)
 2. [彻底理解链接器 1](https://zhuanlan.zhihu.com/p/369036368)
 3. [彻底理解链接器 2](https://zhuanlan.zhihu.com/p/369039101)
 4. [计算机那些事(5)——多个目标文件的链接、静态链接、动态链接](https://blog.csdn.net/jinking01/article/details/105388149)
+5. [GUN linker](https://ftp.gnu.org/old-gnu/Manuals/ld-2.9.1/html_mono/ld.html)
+6. [LLD - The LLVM Linker](https://lld.llvm.org/)
+7. [The ELF, COFF and Wasm Linkers](https://lld.llvm.org/NewLLD.html)
