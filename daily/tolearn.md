@@ -24,3 +24,8 @@
 
 > - [ ] linux 权限 chmod
 > - [ ] linux 基本操作（比如 ctrl+x/ctrl+d 等）
+
+# 2022-07-01
+
+> - [ ] cpp vector 和 list 区别
+> - [ ] .cc .cpp
