@@ -274,6 +274,37 @@ to be continued...
 
 # LLD - The LLVM Linker
 
+## Design
+
+### Key Concepts
+
+#### Speed by design
+
+For example, we do not read section contents or relocations until we need them to continue linking. When we need to do some costly operation (such as looking up a hash table for each symbol), we do it only once. We obtain a handle (which is typically just a pointer to actual data) on the first operation and use it throughout the process.
+
+#### Efficient archive file handling
+
+The traditional Unix linker maintains a set of undefined symbols during linking. The linker visits each file in the order as they appeared in the command line until the set becomes empty. What the linker would do depends on file type.
+
+* If the linker visits an object file, the linker links object files to the result, and undefined symbols in the object file are added to the set.
+* If the linker visits an archive file, it checks for the archive file’s symbol table and extracts all object files that have definitions for any symbols in the set.
+
+This algorithm sometimes leads to a counter-intuitive behavior. If you give archive files before object files, nothing will happen because when the linker visits archives, there is no undefined symbols in the set. As a result, no files are extracted from the first archive file, and the link is done at that point because the set is empty after it visits one file.
+
+Here is how LLD approaches the problem. Instead of memorizing only undefined symbols, we program LLD so that it memorizes all symbols. When it sees an undefined symbol that can be resolved by extracting an object file from an archive file it previously visited, it immediately extracts the file and links it. It is doable because LLD does not forget symbols it has seen in archive files.
+
+### Important Data Structures
+
+#### Symbol
+
+This class represents a symbol. They are created for symbols in object files or archive files. The linker creates linker-defined symbols as well.
+
+There are basically three types of Symbols: Defined, Undefined, or Lazy.
+
+* **Defined symbols** are for all symbols that are considered as “resolved”, including real defined symbols, COMDAT symbols, common symbols, absolute symbols, linker-created symbols, etc.
+* **Undefined symbols** represent undefined symbols, which need to be replaced by Defined symbols by the resolver until the link is complete.
+* **Lazy symbols** represent symbols we found in archive file headers which can turn into Defined if we read archive members.
+
 # 参考链接
 
 1. [链接器、链接过程及相关概念解析](https://blog.csdn.net/yueguangmuyu/article/details/116710102)
