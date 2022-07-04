@@ -27,5 +27,5 @@
 
 # 2022-07-01
 
-> - [ ] cpp vector 和 list 区别
-> - [ ] .cc .cpp
+> - [x] cpp vector 和 list 区别
+> - [x] .cc .cpp
