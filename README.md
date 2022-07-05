@@ -5,6 +5,8 @@
 * [MarkDown](markdown)
 * [C++](cpp)
 * [Compiler](compiler)
+* [Shell](shell)
+* [Git](git)
 
 **Working Note**
 
