@@ -29,3 +29,7 @@
 
 > - [x] cpp vector 和 list 区别
 > - [x] .cc .cpp
+
+# 2022-07-06
+
+> - [ ] vim 分屏
