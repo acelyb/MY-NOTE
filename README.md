@@ -7,6 +7,7 @@
 * [Compiler](compiler)
 * [Shell](shell)
 * [Git](git)
+* [Vim](vim)
 
 **Working Note**
 
