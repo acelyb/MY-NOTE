@@ -17,3 +17,4 @@
 - [x] #ifndef #define #endif
 - [ ] 重载 operator
 - [ ] 函数签名
+- [ ] inline 函数
