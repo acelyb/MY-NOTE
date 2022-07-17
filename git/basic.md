@@ -12,3 +12,17 @@ git fetch origin
 git branch -u origin/master master
 git remote set-head origin -a
 ```
+
+## 二分法 git bisect
+
+`git bisect start`命令启动查错，它的格式如下
+
+```shell
+$ git bisect start [终点] [起点]
+```
+
+例：
+
+```shell
+$ git bisect start HEAD 4d83cf
+```
