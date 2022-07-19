@@ -12,12 +12,12 @@
 
 # 2022-06-27
 
-> - [ ] 数组指针与数组的用法
+> - [x] 数组指针与数组的用法
 
 # 2022-06-28
 
-> - [ ] int argc, char** argv
-> - [ ] git commit --amend
+> - [x] int argc, char** argv
+> - [x] git commit --amend
 > - [x] shell 脚本
 
 # 2022-06-29
@@ -37,3 +37,10 @@
 # 2022-07-11
 
 > - [ ] git 操作
+
+# 2022-07-19
+
+> - [ ] wafer 原理
+> - [ ] 图优化和 ai 编译优化的区别
+> - [ ] TFU
+> - [ ] XLA 和 LLVM 关系

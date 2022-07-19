@@ -431,6 +431,48 @@ C++ 对抽象类的限定：
 * 抽象类只能作为其他类的基类，可以通过抽象类对象的指针或引用和访问到它的派生类对象，实现运行时的多态
 * 如果派生类只是简单地继承了抽象类的纯虚函数，而没有重新定义基类的纯虚函数，则派生类也是一个抽象类
 
+## explicit
+
+在C++中，explicit关键字用来修饰类的构造函数，被修饰的构造函数的类，不能发生相应的隐式类型转换，只能以显示的方式进行类型转换
+
+explicit使用注意事项:
+
+* explicit 关键字只能用于类内部的构造函数声明上
+* explicit 关键字作用于单个参数的构造函数
+* 在 C++ 中，explicit 关键字用来修饰类的构造函数，被修饰的构造函数的类，不能发生相应的隐式类型转换
+* 类的声明和定义分别在两个文件中时，explicit只能写在在声明中，不能写在定义中
+
+```cpp
+#include <iostream>  
+using namespace std;  
+class Test1  
+{  
+public :  
+    Test1(int num):n(num){}  
+private:  
+    int n;  
+};  
+class Test2  
+{  
+public :  
+    explicit Test2(int num):n(num){}  
+private:  
+    int n;  
+};  
+  
+int main()  
+{  
+    Test1 t1 = 12;  
+    Test2 t2(13);  
+    Test2 t3 = 14;  
+          
+    return 0;  
+}
+```
+
+编译时，会指出 t3那一行error:无法从“int”转换为“Test2”。而t1却编译通过。注释掉t3那行，调试时，t1已被赋值成功
+
+
 # 模板
 
 ## 函数模板
@@ -619,6 +661,23 @@ int a = 4;
 pf(a, 2);
 ```
 
+## main 函数
+
+### 参数
+
+`int argc, char** argv` 中，`argc` 是命令行总的参数个数。`argv[]` 为保存命令行参数的字符串指针，其中第 0 个参数是程序的全名，以后的参数为命令行后面跟的用户输入的参数，argv参数是字符串指针数组，其各元素值为命令行中各字符串(参数均按字符串处理)的首地址。 指针数组的长度即为参数个数argc。数组元素初值由系统自动赋予
+
+例如，输入 `test a.c b.c t.c`，则
+
+```cpp
+argc = 4
+
+argv[0] = "test"  
+argv[1] = "a.c"  
+argv[2] = "b.c"  
+argv[3] = "t.c"
+```
+
 # 数据类型
 
 ## 强制转换
@@ -764,6 +823,27 @@ Return the most contiguous size aligned at specified width. `ALIGN_UP(13, 4)` wo
 计算`size`以`align`为倍数的上界数
 
 注：`size`应当为2的 n 次方，即2, 4, 8, 16...
+
+# 指针
+
+## 指向数组的指针
+
+在下面的声明中
+
+```cpp
+double a[50]
+```
+
+`a` 是一个指向 `&a[0]` 的指针，即数组 `a` 的第一个元素的地址。下面的程序片段把 `p` 赋值为 `a` 的第一个元素的地址
+
+```cpp
+double *p;
+double a[10];
+
+p = a;
+```
+
+使用数组名作为常量指针是合法的，反之亦然。因此，`*(a + 4)` 是一种访问 `a[4]` 数据的合法方式
 
 ### 参考链接
 
