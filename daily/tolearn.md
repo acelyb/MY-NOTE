@@ -40,11 +40,11 @@
 
 # 2022-07-19
 
-> - [ ] wafer 原理
+> - [x] wafer 原理
 > - [ ] 图优化和 ai 编译优化的区别
-> - [ ] TFU
+> - [x] TPU
 > - [ ] XLA 和 LLVM 关系
 
 # 2022-07-20
 
-> - [ ] https://www.zhihu.com/question/60546182
+> - [x] https://www.zhihu.com/question/60546182
