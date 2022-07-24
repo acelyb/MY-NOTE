@@ -694,6 +694,305 @@ argv[2] = "b.c"
 argv[3] = "t.c"
 ```
 
+## operator 重载运算符
+
+operator 是 C++ 的一个关键字，它和运算符（如 =）一起使用，表示一个运算符重载函数，在理解时可将 operator 和待重载的运算符整体（如 operator=）视为一个函数名
+
+实现运算符重载的方式通常有以下两种：
+
+* 运算符重载实现为类的成员函数；
+* 运算符重载实现为非类的成员函数（即全局函数）。
+
+### 运算符重载实现为类的成员函数
+
+在类体中声明（定义）需要重载的运算符，声明方式跟普通的成员函数一样，只不过运算符重载函数的名字是“operator紧跟一个 C++ 预定义的操作符”，示例用法如下（person 是我们定义的类）：
+
+```cpp
+bool operator==(const person& ps)
+{
+    if (this->age == ps.age)
+    {
+        return true;
+    }
+    return false;
+}
+```
+
+### 运算符重载实现为非类的成员函数（即全局函数）
+
+对于全局重载运算符，代表左操作数的参数必须被显式指定
+
+```cpp
+#include <iostream>
+ 
+using namespace std;
+ 
+class person
+{
+public:
+    int age;
+};
+ 
+// 左操作数的类型必须被显式指定
+// 此处指定的类型为person类
+bool operator==(person const& p1 ,person const& p2)
+{
+    if (p1.age == p2.age)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+ 
+int main()
+{
+    person p1;
+    person p2;
+    p1.age = 18;
+    p2.age = 18;
+ 
+    if (p1 == p2)
+    {
+        cout << "p1 is equal with p2." << endl;
+    }
+    else
+    {
+        cout << "p1 is NOT equal with p2." << endl;
+    }
+ 
+    return 0;
+}
+```
+
+### 运算符重载的方式选择
+
+可以根据以下因素，确定把一个运算符重载为类的成员函数还是全局函数：
+
+* 如果一个重载运算符是类的成员函数，那么只有当与它一起使用的左操作数是该类的对象时，该运算符才会被调用；而如果该运算符的左操作数确定为其他的类型，则运算符必须被重载为全局函数；
+* C++ 要求'='、'[]'、'()'、'->'运算符必须被定义为类的成员函数，把这些运算符通过全局函数进行重载时会出现编译错误；
+* 如果有一个操作数是类类型（如 string 类），那么对于对称操作符（比如操作符“==”），最好通过全局函数的方式进行重载。
+
+### 运算符重载的限制
+
+实现运算符重载时，需要注意以下几点：
+
+* 重载后运算符的操作数至少有一个是用户定义的类型；
+* 不能违反运算符原来的语法规则；
+* 不能创建新的运算符；
+* 有一些运算符是不能重载的，如“sizeof”；
+* =、()、[]、-> 操作符只能被类的成员函数重载。
+
+### operator=
+
+某些情况下，当我们编写一个类的时候，并不需要为该类重载“=”运算符，因为编译系统为每个类提供了默认的赋值运算符“=”，使用这个默认的赋值运算符操作类对象时，该运算符会把这个类的所有数据成员都进行一次赋值操作。例如有如下类：
+
+```cpp
+class A
+{
+public:
+    int a;
+    int b;
+    int c;
+};
+```
+
+但是，在下面的示例中，使用编译系统提供的默认赋值运算符，就会出现问题了
+
+```cpp
+#include <iostream>
+#include <string.h>
+ 
+using namespace std;
+ 
+class ClassA
+{
+public:
+    ClassA()
+    {
+    
+    }
+ 
+    ClassA(const char* pszInputStr)
+    {
+        pszTestStr = new char[strlen(pszInputStr) + 1];
+        strncpy(pszTestStr, pszInputStr, strlen(pszInputStr) + 1);
+    }
+    virtual ~ClassA()
+    {
+        delete pszTestStr;
+    }
+public:
+    char* pszTestStr;
+};
+ 
+int main()
+{
+    ClassA obj1("liitdar");
+ 
+    ClassA obj2;
+    obj2 = obj1;
+ 
+    cout << "obj2.pszTestStr is: " << obj2.pszTestStr << endl;
+    cout << "addr(obj1.pszTestStr) is: " << &obj1.pszTestStr << endl;
+    cout << "addr(obj2.pszTestStr) is: " << &obj2.pszTestStr << endl;
+ 
+    return 0;
+}
+```
+
+当对象 obj1 和 obj2 进行析构时，由于重复释放了同一块内存空间，导致程序崩溃报错。在这种情况下，就需要我们重载赋值运算符“=”了
+
+我们修改一下前面出错的示例代码，编写一个包含赋值运算符重载函数的类，修改后的代码内容如下：
+
+```cpp
+#include <iostream>
+#include <string.h>
+ 
+using namespace std;
+ 
+class ClassA
+{
+public:
+    ClassA()
+    {
+    
+    }
+    ClassA(const char* pszInputStr)
+    {
+        pszTestStr = new char[strlen(pszInputStr) + 1];
+        strncpy(pszTestStr, pszInputStr, strlen(pszInputStr) + 1);
+    }
+    virtual ~ClassA()
+    {
+        delete pszTestStr;
+    }
+    // 赋值运算符重载函数
+    ClassA& operator=(const ClassA& cls)
+    {
+        // 避免自赋值
+        if (this != &cls)
+        {
+            // 避免内存泄露
+            if (pszTestStr != NULL)
+            {
+                delete pszTestStr;
+                pszTestStr = NULL;
+            }
+ 
+            pszTestStr = new char[strlen(cls.pszTestStr) + 1];
+            strncpy(pszTestStr, cls.pszTestStr, strlen(cls.pszTestStr) + 1);
+        }
+        
+        return *this;
+    }
+    
+public:
+    char* pszTestStr;
+};
+ 
+int main()
+{
+    ClassA obj1("liitdar");
+ 
+    ClassA obj2;
+    obj2 = obj1;
+ 
+    cout << "obj2.pszTestStr is: " << obj2.pszTestStr << endl;
+    cout << "addr(obj1.pszTestStr) is: " << &obj1.pszTestStr << endl;
+    cout << "addr(obj2.pszTestStr) is: " << &obj2.pszTestStr << endl;
+ 
+    return 0;
+}
+```
+
+## 拷贝构造函数
+
+拷贝构造函数是一种特殊的构造函数，它在创建对象时，是使用同一类中之前创建的对象来初始化新创建的对象。拷贝构造函数通常用于：
+
+* 通过使用另一个同类型的对象来初始化新创建的对象。
+* 复制对象把它作为参数传递给函数。
+* 复制对象，并从函数返回这个对象。
+
+```cpp
+#include <iostream>
+ 
+using namespace std;
+ 
+class Line
+{
+   public:
+      int getLength( void );
+      Line( int len );             // 简单的构造函数
+      Line( const Line &obj);      // 拷贝构造函数
+      ~Line();                     // 析构函数
+ 
+   private:
+      int *ptr;
+};
+ 
+// 成员函数定义，包括构造函数
+Line::Line(int len)
+{
+    cout << "调用构造函数" << endl;
+    // 为指针分配内存
+    ptr = new int;
+    *ptr = len;
+}
+ 
+Line::Line(const Line &obj)
+{
+    cout << "调用拷贝构造函数并为指针 ptr 分配内存" << endl;
+    ptr = new int;
+    *ptr = *obj.ptr; // 拷贝值
+}
+ 
+Line::~Line(void)
+{
+    cout << "释放内存" << endl;
+    delete ptr;
+}
+int Line::getLength( void )
+{
+    return *ptr;
+}
+ 
+void display(Line obj)
+{
+   cout << "line 大小 : " << obj.getLength() <<endl;
+}
+ 
+// 程序的主函数
+int main( )
+{
+   Line line1(10);
+ 
+   Line line2 = line1; // 这里也调用了拷贝构造函数
+ 
+   display(line1);
+   display(line2);
+ 
+   return 0;
+}
+```
+
+当上面的代码被编译和执行时，它会产生下列结果：
+
+```shell
+调用构造函数
+调用拷贝构造函数并为指针 ptr 分配内存
+调用拷贝构造函数并为指针 ptr 分配内存
+line 大小 : 10
+释放内存
+调用拷贝构造函数并为指针 ptr 分配内存
+line 大小 : 10
+释放内存
+释放内存
+释放内存
+```
+
 # 数据类型
 
 ## 强制转换

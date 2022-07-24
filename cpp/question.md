@@ -15,6 +15,8 @@
 - [x] new malloc
 - [x] .o .so
 - [x] #ifndef #define #endif
-- [ ] 重载 operator
+- [x] 重载 operator
 - [x] 函数签名
 - [ ] inline 函数
+- [ ] 重载
+- [ ] 重写
