@@ -48,3 +48,7 @@
 # 2022-07-20
 
 > - [x] https://www.zhihu.com/question/60546182
+
+# 2022-07-25
+
+> - [ ] CUDA 编程
