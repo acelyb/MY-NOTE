@@ -18,5 +18,8 @@
 - [x] 重载 operator
 - [x] 函数签名
 - [ ] inline 函数
-- [ ] 重载
-- [ ] 重写
+- [x] 重载
+- [x] 重写
+- [ ] extern "C"
+- [ ] google 风格 函数参数
+- [ ] override 覆盖

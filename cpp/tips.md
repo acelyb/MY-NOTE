@@ -993,6 +993,181 @@ line 大小 : 10
 释放内存
 ```
 
+## 函数重载 overload
+
+实现函数重载的条件：
+
+* 同一个作用域
+* 参数个数不同
+* 参数类型不同
+* 参数顺序不同
+
+```cpp
+//1. 函数重载条件
+namespace A{
+ void MyFunc(){ cout << "无参数!" << endl; }
+ void MyFunc(int a){ cout << "a: " << a << endl; }
+ void MyFunc(string b){ cout << "b: " << b << endl; }
+ void MyFunc(int a, string b){ cout << "a: " << a << " b:" << b << endl;}
+    void MyFunc(string b, int a){cout << "a: " << a << " b:" << b << endl;}
+}
+
+//2.返回值不作为函数重载依据
+namespace B{
+ void MyFunc(string b, int a){}
+ //int MyFunc(string b, int a){} //无法重载仅按返回值区分的函数
+}
+```
+
+注意: 函数重载和默认参数一起使用，需要额外注意二义性问题的产生。
+
+```cpp
+void MyFunc(string b){
+ cout << "b: " << b << endl;
+}
+
+//函数重载碰上默认参数
+void MyFunc(string b, int a = 10){
+ cout << "a: " << a << " b:" << b << endl;
+}
+
+int main(){
+ MyFunc("hello"); //这时，两个函数都能匹配调用，产生二义性
+ return 0;
+}
+```
+
+### 函数重载实现原理
+
+编译器为了实现函数重载，也是默认为我们做了一些幕后的工作，编译器用不同的参数类型来修饰不同的函数名，比`void func();`编译器可能会将函数名修饰成`_func`，当编译器碰到`void func(int x)`,编译器可能将函数名修饰为`_func_int`,当编译器碰到`void func(int x,char c)`,编译器可能会将函数名修饰为`_func_int_char`我这里使用“可能”这个字眼是因为编译器如何修饰重载的函数名称并没有一个统一的标准，所以不同的编译器可能会产生不同的内部名
+
+```cpp
+void func(){}
+void func(int x){}
+void func(int x,char y){}
+```
+
+以上三个函数在linux下生成的编译之后的函数名为
+
+```cpp
+_Z4funcv //v 代表void,无参数
+_Z4funci //i 代表参数为int类型
+_Z4funcic //i 代表第一个参数为int类型，第二个参数为char类型
+```
+
+## 函数重写 overwrite
+
+函数重写（overwrite）和函数重载（over load）是 C++ 中常见的用法。一般情况下，它们都被放在一起比较，本文重点只介绍函数重写，原因如下：
+
+1. 函数重载的概念比较简单也容易理解；
+2. 函数重载和函数重写放在一起容易混淆
+
+函数重载其实就是复用了同一个函数名而已，重载的函数只是要求参数列表不同，可以是参数类型不同，参数个数不同，或参数顺序不同等。同上，重载也不能用返回值来区别。
+
+**函数覆盖是子类和父类之间的关系，是垂直关系；而重载是同一个类中不同方法之间的关系，是水平关系**
+
+代码 1
+
+```cpp
+class Entity {
+public:
+    Entity(){};
+    void Func(int a)
+    {
+        std::cout << "Entity" << std::endl;
+    }
+};
+
+class Person : public Entity {
+public:
+    Person() {};
+    void Func(int a)
+    {
+        std::cout << "Person" << std::endl;
+    }
+};
+
+int main()
+{
+    Entity* e = new Person();
+    e->Func(0); // 输出 Entity
+    std::cin.get();
+}
+```
+
+Entity 类和 Person 类里面定义了两个一模一样的函数 Func，这两个类之间虽然是继承关系，但是这两个函数之间没有任何关系，它们只是属于不同类里面的方法。
+
+代码 2
+
+```cpp
+#include <iostream>
+
+class Entity {
+public:
+    Entity(){};
+    virtual void Func(int a)
+    {
+        std::cout << "Entity" << std::endl;
+    }
+};
+
+class Person : public Entity {
+public:
+    Person() {};
+    void Func(int a)
+    {
+        std::cout << "Person" << std::endl;
+    }
+};
+
+int main()
+{
+    Entity* e = new Person();
+    e->Func(0); // 输出 Person
+    std::cin.get();
+}
+```
+
+Entity 类和 Person 类里面定义了两个一模一样的函数 Func，唯一不同的是，基类中的函数被关键字 virtual 修饰了，很明显，这是一个虚函数。当定义一个指向派生类的基类对象的指针时，调用该函数时，实际指向的是派生类中的函数。
+
+代码 3
+
+```cpp
+#include <iostream>
+
+class Entity {
+public:
+    Entity(){};
+    void Func(int a)
+    {
+        std::cout << "Entity" << std::endl;
+    }
+};
+
+class Person : public Entity {
+public:
+    Person() {};
+    void Func(std::string a)
+    {
+        std::cout << "Person" << std::endl;
+    }
+};
+
+int main()
+{
+    Entity* e = new Person();
+    e->Func(0);  // 输出 Entity
+    e->Func("0");  // 编译报错：不能调用派生类成员函数
+    std::cin.get();
+}
+```
+
+从函数签名的概念可知，基类 Entity 和派生类 Person 中分别定义了两个不同的函数，也就是说，这两个函数也毫无瓜葛，基类指针当然也就不能访问派生类中的函数了。
+
+函数覆盖存在于父类和子类的关系中，实际上对应的就是虚函数的概念。
+
+## 函数覆盖 override
+
 # 数据类型
 
 ## 强制转换
