@@ -314,3 +314,4 @@ There are basically three types of Symbols: Defined, Undefined, or Lazy.
 5. [GUN linker](https://ftp.gnu.org/old-gnu/Manuals/ld-2.9.1/html_mono/ld.html)
 6. [LLD - The LLVM Linker](https://lld.llvm.org/)
 7. [The ELF, COFF and Wasm Linkers](https://lld.llvm.org/NewLLD.html)
+8. [LLVM中的lld程序流程分析](https://zhuanlan.zhihu.com/p/174077712)
