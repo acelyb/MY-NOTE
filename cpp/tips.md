@@ -1170,6 +1170,81 @@ int main()
 
 如果派生类在虚函数声明时使用了override描述符，那么该函数必须重载其基类中的同名函数，否则代码将无法通过编译
 
+C++ 11 中引入了 override 关键字以帮助防止在覆盖虚函数时出现的一些小问题。例如， 在下面的程序中就存在这样的错误。
+
+```cpp
+// This program has a subtle error in the virtual functions.
+#include <iostream>
+#include <memory>
+using namespace std;
+
+class Base
+{
+    public:
+        virtual void functionA(int arg) const{cout << "This is Base::functionA" << endl; }
+};
+
+class Derived : public Base
+{
+    public:
+        virtual void functionA(long arg) const{ cout << "This is Derived::functionA" << endl; }
+};
+int main()
+{
+    // Base pointer b points to a Derived class object.
+    shared_ptr<Base>b = make_shared<Derived>();
+    // Call virtual functionA through Base pointer.
+    b->functionA(99);
+    return 0;
+}
+```
+
+程序输出结果：
+
+```cpp
+This is Base::functionA
+```
+
+在该程序中，Base 类指针 b 指向 Derived 类对象。因为 functionA 是一个虚函数，所以一般可以认为 b 对 functionA 的调用将选择 Derived 类的版本。
+
+但是，从程序的输出结果来看，实际情况并非如此。其原因是这两个函数有不同的形参类型，所以 Derived 类中的 functionA 不能覆盖 Base 类中的 functionA。基类中的函数釆用的是 int 类型的参数，而派生类中的函数釆用的则是 long 类型的参数，因此，Derived 类中的 functionA 只不过是重载 Base 类中的 functionA 函数。
+
+要确认派生类中的成员函数覆盖基类中的虚成员函数，可以在派生类的函数原型（如果函数以内联方式写入，则在函数头）后面加上 override 关键字。override 关键字告诉编译器，该函数应覆盖基类中的函数。如果该函数实际上没有覆盖任何函数，则会导致编译器错误。
+
+下面的程序演示了上面程序的修改方法，使得 Derived 类的函数可以真正覆盖 Base 类的函数。请注意，在该程序中已经将 Derived 类函数的形参修改为 int，并且在函数头中添加了 override 关键字。
+
+```cpp
+//This program demonstrates the use of the override keyword.
+#include <iostream>
+#include <memory>
+using namespace std;
+
+class Base
+{
+    public:
+        virtual void functionA(int arg) const { cout << "This is Base::functionA" << endl;}
+};
+class Derived : public Base
+{
+    public:
+        virtual void functionA(int arg) const override{ cout << "This is Derived::functionA" << endl; }
+};
+int main()
+{
+    // Base pointer b points to a Derived class object.
+    shared_ptr<Base>b = make_shared<Derived>();
+    // Call virtual functionA through Base pointer.
+    b->functionA(99);
+    return 0;
+}
+```
+
+程序输出结果：
+
+```cpp
+This is Derived::functionA
+```
+
 # 数据类型
 
 ## 强制转换

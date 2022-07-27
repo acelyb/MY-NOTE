@@ -22,4 +22,4 @@
 - [x] 重写
 - [ ] extern "C"
 - [x] google 风格 函数参数
-- [ ] override 覆盖
+- [x] override 覆盖
