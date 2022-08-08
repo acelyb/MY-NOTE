@@ -305,6 +305,113 @@ There are basically three types of Symbols: Defined, Undefined, or Lazy.
 * **Undefined symbols** represent undefined symbols, which need to be replaced by Defined symbols by the resolver until the link is complete.
 * **Lazy symbols** represent symbols we found in archive file headers which can turn into Defined if we read archive members.
 
+lld将符号信息分为两部分：Symbol和SymbolBody。Symbol类代表一个符号，是为目标文件或归档文件中的符号创建的。链接器也会创建链接器定义的符号。Symbol也是SymbolBody的句柄（handle），SymbolBody是真正符号数据的容器，每一个对象文件有一个对应的SymbolBody。对应一个符号名只有一个Symbol，SymbolTable保证了这种唯一性。但一个符号名可以对应多个SymbolBody，因为同一个符号可能出现在多个对象文件中。
+
+### LLD 程序流程分析
+
+链接过程主要由LinkerDriver程序驱动
+
+elf LinkerDriver的功能主要包括：
+
+1. 处理命令行选项，主要实现在readConfigs()方法中，用命令行选项的值设置Config的对应域；
+2. 生成InputFile。createFiles()方法遍历命令行选项参数中指定的输入文件，调用addFile()方法为每个输入文件生成InputFile。调用过程如下图所示（仅以ELF64LE为例）：
+
+```mermaid
+graph TD
+    m(main) --> cf(createFiles)
+    cf --> af(addFile)
+    af --> co(createObjectFile)
+    co --> mo(make ObjFile ELF64LE)
+```
+
+addFile()方法首先调用readFile()将输入文件读入MemoryBufferRef。createObjectFile()以MemoryBufferRef为参数生成ObjFile（InputFile的子类），并放入Files。主要代码所示：
+
+```cpp
+void LinkerDriver::createFiles(opt::InputArgList &Args) {
+…
+ for (auto *Arg : Args) {
+   case OPT_INPUT:
+     addFile(Arg->getValue(), /*WithLOption=*/false);
+…
+ 
+void LinkerDriver::addFile(StringRef Path, bool WithLOption) {
+…
+ case file_magic::elf_relocatable:
+   if (InLib)
+     Files.push_back(make<LazyObjFile>(MBRef, "", 0));
+   else
+     Files.push_back(createObjectFile(MBRef));
+…
+InputFile *elf::createObjectFile(MemoryBufferRef MB, StringRef ArchiveName,
+ uint64_t OffsetInArchive) {
+…
+ case ELF64LEKind:
+   return make<ObjFile<ELF64LE>>(MB, ArchiveName);
+…
+```
+
+Files是LinkerDriver类的私有成员变量，是InputFile类型的向量，可以动态向其中添加输入文件对象。
+
+```cpp
+std::vector<InputFile *> Files;
+```
+
+3. 完成链接功能。实际的链接功能在LinkerDriver::link()方法中完成。其中比较重要的功能首先是遍历前述InputFile向量Files，对每个输入文件调用parseFile()方法，parseFile()方法根据文件格式调用doParseFile()方法，代码如下所示：
+
+```cpp
+void elf::parseFile(InputFile *File) {
+…
+ case ELF64LEKind:
+   doParseFile<ELF64LE>(File);
+…
+```
+
+doParseFile()方法根据文件类型调用各自的parse()方法，读入并将所有符号放入符号表中，检查是否没有剩余的未定义符号，创造一个writer，并将符号表传递给writer以将结果写入文件。
+
+```cpp
+template <class ELFT> static void doParseFile(InputFile *File) {
+…
+ if (auto *F = dyn_cast<BinaryFile>(File)) {
+   BinaryFiles.push_back(F);
+   F->parse();
+   return;
+ }
+…
+ // Regular object file
+ ObjectFiles.push_back(File);
+ cast<ObjFile<ELFT>>(File)->parse(ComdatGroups);
+}
+ 
+template <class ELFT>
+void ObjFile<ELFT>::parse(DenseSet<CachedHashStringRef> &ComdatGroups) {
+ // Read a section table. JustSymbols is usually false.
+ if (this->JustSymbols)
+   initializeJustSymbols();
+ else
+   initializeSections(ComdatGroups);
+ 
+ // Read a symbol table.
+ initializeSymbols();
+}
+ 
+template <class ELFT>
+void ObjFile<ELFT>::initializeSections(
+DenseSet<CachedHashStringRef> &ComdatGroups) {
+…
+ case SHT_SYMTAB:
+   this->initSymtab<ELFT>(ObjSections, &Sec);
+   break;
+ …
+ 
+ELFFileBase::initSymtab
+ 
+template <class ELFT> void ObjFile<ELFT>::initializeSymbols() {
+ this->Symbols.reserve(this->getELFSyms<ELFT>().size());
+ for (const Elf_Sym &Sym : this->getELFSyms<ELFT>())
+   this->Symbols.push_back(createSymbol(&Sym));
+}
+```
+
 # 参考链接
 
 1. [链接器、链接过程及相关概念解析](https://blog.csdn.net/yueguangmuyu/article/details/116710102)
@@ -315,3 +422,5 @@ There are basically three types of Symbols: Defined, Undefined, or Lazy.
 6. [LLD - The LLVM Linker](https://lld.llvm.org/)
 7. [The ELF, COFF and Wasm Linkers](https://lld.llvm.org/NewLLD.html)
 8. [LLVM中的lld程序流程分析](https://zhuanlan.zhihu.com/p/174077712)
+9. [How to add a new target to LLD](https://llvm.org/devmtg/2016-09/slides/Smith-NewLLDTarget.pdf)
+10. [The ELF, COFF and Wasm Linkers](https://lld.llvm.org/NewLLD.html)

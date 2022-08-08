@@ -6,7 +6,7 @@
 - [x] 友元
 - [x] union
 - [x] 静态变量
-- [ ] handle
+- [x] handle
 - [x] 动态链接库
 - [x] 强制转换（4种）
 - [x] 类 什么时候用 new
@@ -17,9 +17,9 @@
 - [x] #ifndef #define #endif
 - [x] 重载 operator
 - [x] 函数签名
-- [ ] inline 函数
+- [x] inline 函数
 - [x] 重载
 - [x] 重写
-- [ ] extern "C"
+- [x] extern "C"
 - [x] google 风格 函数参数
 - [x] override 覆盖
