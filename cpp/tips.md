@@ -1458,3 +1458,4 @@ p = a;
 1. [Linux中_ALIGN宏背后的原理](https://blog.csdn.net/wangpeihuixyz/article/details/40593619)
 2. [C 数据对齐算法](https://blog.csdn.net/sean_8180/article/details/84675716)
 3. [LEARN C++](https://www.learncpp.com/)
+4. [Google 开源项目风格指南](https://zh-google-styleguide.readthedocs.io/en/latest/)
