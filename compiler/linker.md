@@ -266,6 +266,26 @@ void foo() {
 
 对于模块间函数调用，同样可以采用类型3的方法来解决。与上面的类型有所不同的是，GOT中响应的项保存的是目标函数的地址，当模块需要调用目标函数时，可以通过GOT中的项进行间接跳转
 
+### load-time dynamic linking 加载时动态链接
+
+#### 阶段一 将动态库信息写入可执行文件
+
+在编译链接生成可执行文件时，需要将使用的动态库加入到链接选项当中，比如在Linux下引用libMath.so，就需要将libMath.so加入到链接选项当中（比如libMath.so放到了/usr/lib下，那么使用命令 gcc ... -lMath -L/user/lib ... 进行编译链接），所以使用这种方式生成的可执行文件中保存了依赖的动态库信息，在Linux可使用一个简单的命令ldd来查看。
+
+#### 阶段二 加载可执行文件时依据动态库信息进行动态链接
+
+由于在阶段一生成的可执行文件中保存了动态库信息，当可执行文件加载完成后，就可以依据此信息进行中动态库的查找以及符号决议了。
+
+通过这个过程也可以清楚的看到静态库和动态库的区别，使用动态库的可执行文件当中仅仅保留相应信息，动态库的链接过程被推迟到了程序启动加载时。
+
+### run-time dynamic linking 运行时动态链接
+
+运行时动态链接不需要在编译链接时提供动态库信息，也就是说，在可执行文件被启动运行之前，可执行文件对所依赖的动态库信息一无所知，只有当程序运行到需要调用动态库所提供的代码时才会启动动态链接过程。
+
+我们在上一节中介绍了load-time，也就是程序加载时，那么程序加载完成后就开始程序执行了，那么所谓run-time(运行时)指的就是从程序开始被CPU执行到程序执行完成退出的这段时间。
+
+由于在编译链接生成可执行文件的过程中没有提供所依赖的动态库信息，因此这项任务就留给了程序员，在代码当中如果需要使用某个动态库所提供的函数，我们可以使用特定的API来运行时加载动态库，在Windows下通过LoadLibrary或者LoadLibraryEx，在Linux下通过使用dlopen、dlsym、dlclose这样一组函数在运行时链接动态库。当这些API被调用后，同样是首先去找这些动态库，将其从磁盘copy到内存，然后查找程序依赖的函数是否在动态库中定义。这些过程完成后动态库中的代码就可以被正常使用了。
+
 # 多文件链接
 
 to be continued...
@@ -418,10 +438,13 @@ template <class ELFT> void ObjFile<ELFT>::initializeSymbols() {
 2. [彻底理解链接器 1](https://zhuanlan.zhihu.com/p/369036368)
 3. [彻底理解链接器 2](https://zhuanlan.zhihu.com/p/369039101)
 4. [彻底理解链接器：三，库与可执行文件的生成](https://mp.weixin.qq.com/s?__biz=Mzg4OTYzODM4Mw==&mid=2247485637&idx=1&sn=2e7b9f80111e20b34b3a0f058a0048e4&chksm=cfe99445f89e1d534e9fdbe4e60ba999c7d7999961b4b0033bf9e1493f3fb67e5ac4bd4bac68&cur_album_id=1923374391426416642&scene=189#wechat_redirect)
-5. [计算机那些事(5)——多个目标文件的链接、静态链接、动态链接](https://blog.csdn.net/jinking01/article/details/105388149)
-6. [GUN linker](https://ftp.gnu.org/old-gnu/Manuals/ld-2.9.1/html_mono/ld.html)
-7. [LLD - The LLVM Linker](https://lld.llvm.org/)
-8. [The ELF, COFF and Wasm Linkers](https://lld.llvm.org/NewLLD.html)
-9. [LLVM中的lld程序流程分析](https://zhuanlan.zhihu.com/p/174077712)
-10. [How to add a new target to LLD](https://llvm.org/devmtg/2016-09/slides/Smith-NewLLDTarget.pdf)
+5. [彻底理解链接器：四，库与可执行文件的生成](https://mp.weixin.qq.com/s?__biz=Mzg4OTYzODM4Mw==&mid=2247485638&idx=1&sn=307a13a7d2267cb88d0e5258138d853c&chksm=cfe99446f89e1d500e94edcd463bfbec7cd889d82a638b1fd06043d76b0234db3374d8109b5e&cur_album_id=1923374391426416642&scene=189#wechat_redirect)
+6. [彻底理解链接器：五，重定位](https://mp.weixin.qq.com/s?__biz=Mzg4OTYzODM4Mw==&mid=2247485639&idx=1&sn=555db8097c309e237156c632cb94f3f7&chksm=cfe99447f89e1d51ff36fd2f57f19b96b24156af5a8c600d144632fe10a9d8775a0b54496527&cur_album_id=1923374391426416642&scene=189#wechat_redirect)
+7. [彻底理解链接器：六，大型项目是如何被构建出来的](https://mp.weixin.qq.com/s?__biz=Mzg4OTYzODM4Mw==&mid=2247485640&idx=1&sn=1ababc83d8c1256d68400e2a71633531&chksm=cfe99448f89e1d5e887aeab3914c2fc8315703efb79718335c2ee5f78f5f790ec3d6da7bf603&cur_album_id=1923374391426416642&scene=189#wechat_redirect)
+8. [计算机那些事(5)——多个目标文件的链接、静态链接、动态链接](https://blog.csdn.net/jinking01/article/details/105388149)
+9. [GUN linker](https://ftp.gnu.org/old-gnu/Manuals/ld-2.9.1/html_mono/ld.html)
+10. [LLD - The LLVM Linker](https://lld.llvm.org/)
 11. [The ELF, COFF and Wasm Linkers](https://lld.llvm.org/NewLLD.html)
+12. [LLVM中的lld程序流程分析](https://zhuanlan.zhihu.com/p/174077712)
+13. [How to add a new target to LLD](https://llvm.org/devmtg/2016-09/slides/Smith-NewLLDTarget.pdf)
+14. [The ELF, COFF and Wasm Linkers](https://lld.llvm.org/NewLLD.html)
