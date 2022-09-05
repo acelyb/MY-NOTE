@@ -286,6 +286,86 @@ void foo() {
 
 由于在编译链接生成可执行文件的过程中没有提供所依赖的动态库信息，因此这项任务就留给了程序员，在代码当中如果需要使用某个动态库所提供的函数，我们可以使用特定的API来运行时加载动态库，在Windows下通过LoadLibrary或者LoadLibraryEx，在Linux下通过使用dlopen、dlsym、dlclose这样一组函数在运行时链接动态库。当这些API被调用后，同样是首先去找这些动态库，将其从磁盘copy到内存，然后查找程序依赖的函数是否在动态库中定义。这些过程完成后动态库中的代码就可以被正常使用了。
 
+# 符号
+
+## 弱符号
+
+### 弱符号定义
+
+Weak symbols are symbols that may or may not be defined.
+
+**The linker processes symbols that are defined with a "weak" binding differently from symbols that are defined with global binding.** Instead of including a weak symbol in the object file's symbol table (as it would for a global symbol), the linker only includes a weak symbol in the output of a "final" link if the symbol is required to resolve an otherwise unresolved reference.
+
+This allows the linker to minimize the number of symbols it includes in the output file's symbol table by omitting those that are not needed to resolve references. **Reducing the size of the output file's symbol table reduces the time required to link, especially if there are a large number of pre-loaded symbols to link against.** This feature is particularly helpful for OpenCL applications.
+
+### 弱符号处理
+
+The linker uses the following guidelines to determine which definition is used when resolving references to a symbol:
+
+* A strongly bound symbol always takes precedence over a weakly bound symbol.
+* If two symbols are both strongly bound or both weakly bound, a symbol defined in a linker command file takes precedence over a symbol defined in an input object file.
+* If two symbols are both strongly bound and both are defined in an input object file, the linker provides a symbol redefinition error and halts the link process.
+
+对于 C/C++ 语言来说，编译器默认函数和初始化了的全局变量为强符号，未初始化的全局变量为弱符号。
+
+注意，强符号和弱符号都是针对定义来说的，不是针对符号的引用。比如我们有下面这段程序：
+
+```cpp
+extern int ext;
+int weak;
+int strong = 1;
+__attribute__((weak)) weak2 = 2;
+int main()
+{
+  return 0;
+}
+```
+
+上面这段程序中，"weak" 和 "weak2" 是弱符号，"strong" 和 "main" 是强符号，而 "ext" 既非强符号也非弱符号，因为它是一个外部变量的引用。
+
+针对强弱符号的概念，链接器就会按如下规则处理与选择被多次定义的全局符号：
+
+* 规则1：不允许强符号被多次定义（即不同的目标文件中不能有同名的强符号）；如果有多个强符号定义，则链接器报符号重复定义错误。
+* 规则2：如果一个符号在某个目标文件中是强符号，在其他文件中都是弱符号，那么选择强符号。
+* 规则3：如果一个符号在所有目标文件中都是弱符号，那么选择其中占用空间最大的一个。比如目标文件A定义全局变量global为int型，占4个字节；目标文件B定义global为double型，占8个字节，那么目标文件A和B链接后，符号global占8个字节（尽量不要使用多个不同类型的弱符号，否则容易导致很难发现的程序错误）。
+
+### 弱符号作用
+
+A replaceable definition can be declared weak. A STB_GLOBAL definition from another translation unit can override it. This is a great way providing a default/fallback definition in a library which can be redefined by applications.
+
+```cpp
+// lib.cc
+__attribute__((weak)) void fun() {
+  ...
+}
+
+void feature() {
+  fun();
+}
+
+// app.cc - override the default implementation
+void fun() {
+  ...
+}
+```
+
+### 弱引用
+
+目前我们所看到的对外部目标文件的符号引用在目标文件被最终链接成可执行文件时，它们须要被正确决议，如果没有找到该符号的定义，链接器就会报符号未定义错误，这种被称为强引用（Strong Reference）。与之相对应还有一种弱引用（Weak Reference），在处理弱引用时，如果该符号有定义，则链接器将该符号的引用决议；如果该符号未被定义，则链接器对于该引用不报错。链接器处理强引用和弱引用的过程几乎一样，只是对于未定义的弱引用，链接器不认为它是一个错误。一般对于未定义的弱引用，链接器默认其为0，或者是一个特殊的值，以便于程序代码能够识别。
+
+The ELF specification says "Unresolved weak symbols have a zero value." This property can be used to check whether a definition is provided. A common pattern is to implement an optional hook.
+
+```cpp
+__attribute__((weak)) void undef_weak_fun();
+
+  if (&undef_weak_fun)
+    undef_weak_fun();
+```
+
+## 参考链接
+
+1. [Weak symbol](https://maskray.me/blog/2021-04-25-weak-symbol)
+
 # 多文件链接
 
 to be continued...
