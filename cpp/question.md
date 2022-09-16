@@ -23,6 +23,6 @@
 - [x] extern "C"
 - [x] google 风格 函数参数
 - [x] override 覆盖
-- [ ] context
+- [x] context
 - [ ] 静态函数
 - [ ] CMAKE

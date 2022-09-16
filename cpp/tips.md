@@ -1410,6 +1410,45 @@ int i=1;
 int*a=(int*)i;
 ```
 
+# 语法
+
+## switch case
+
+如果在某一 case 中定义了变量，此变量是局部变量，作用域直到遇到下一个花括号才终结，如果此 case 中未使用 `{}`，会报错
+
+```cpp
+int main()
+{
+    int a =0;
+    switch(a)
+    {
+        case 0: int b = 0;break;
+        case 1: break;
+        default:break;
+    }
+    return 0;
+}
+```
+
+编译器提示错误：
+
+```bash
+testswitch.cpp: In function ‘int main()’:
+testswitch.cpp:9: error: jump to case label
+testswitch.cpp:8: error:   crosses initialization of ‘int b’
+testswitch.cpp:10: error: jump to case label
+testswitch.cpp:8: error:   crosses initialization of ‘int b’
+```
+
+出现这样的提示，你很有可能在某个case标记中定义了局部变量，而后面还有其他的case标记或者default语句。比如说这里的整形变量b。
+
+看看编译器提示的信息 cross initialization of int b, 什么意思呢， 就是说跳过了变量的初始化，仔细想想，确实是这样，我们在case 0 中定义了变量b，在这个程序中，直到遇到switch的“｝”右花括号，b的作用域才终结，也就是说 在case 1 和 default 分支中 变量b依然是可以访问的。考虑这样一种情况，如果switch匹配了case 1，这样case 0的代码被跳过了，那么b就没有定义，如果此时在case 1的代码中访问了b，程序会崩溃的。如果谁也不匹配，执行default也会有同样的危险。
+
+知道了错误的原因，解决起来就很简单了
+
+1. 将case 0 标记 的代码用 `{}` 括起来，这样b的作用域在这个花括号内。在其他的case 标记中不能访问。
+2. 将 变量b放在 switch外面 定义。
+
 # 宏
 
 ## 取整
