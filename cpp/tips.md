@@ -1410,6 +1410,14 @@ int i=1;
 int*a=(int*)i;
 ```
 
+## enum class
+
+限定作用域
+
+参考链接：
+
+1. [Effective Modern C++ Note 03](https://zhuanlan.zhihu.com/p/21722362)
+
 # 语法
 
 ## switch case
