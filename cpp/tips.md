@@ -604,6 +604,38 @@ template <> 返回类型 类模板名<特化的数据类型>::特化成员函数
 
 # 函数
 
+## 声明与定义
+
+在函数声明中：无论是C还是在C++，都可以省略形式参数名。但是，通常都不建议省略形式参数名。
+
+未被使用的参数, 或者根据上下文很容易看出其用途的参数, 可以省略参数名:
+
+```cpp
+class Foo {
+ public:
+  Foo(Foo&&);
+  Foo(const Foo&);
+  Foo& operator=(Foo&&);
+  Foo& operator=(const Foo&);
+};
+```
+
+未被使用的参数如果其用途不明显的话, 在函数定义处将参数名注释起来:
+
+```cpp
+class Shape {
+ public:
+  virtual void Rotate(double radians) = 0;
+};
+
+class Circle : public Shape {
+ public:
+  void Rotate(double radians) override;
+};
+
+void Circle::Rotate(double /*radians*/) {}
+```
+
 ## 动态调用 dlopen + dlsym
 
 参考:

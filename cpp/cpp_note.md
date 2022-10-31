@@ -118,6 +118,324 @@ pv = pd;            // pv 可以存放任意类型的指针
 
 利用`void*`指针能做的事有限，不能直接操作`void*`指针所指向的对象，因为我们并不知道这个对象到底是什么类型，也就无法确定能在这个对象上做哪些操作。
 
+##### 函数指针
+
+函数存放在内存的代码区域内，它们同样有地址。如果我们有一个 `int test(int a)` 的函数，那么，它的地址就是函数的名字，这一点如同数组一样，数组的名字就是数组的起始地址
+
+函数指针的定义方式
+
+```cpp
+data_types (*func_pointer)( data_types arg1, data_types arg2, ...,data_types argn);
+
+int (*fp)(int a); // 这里就定义了一个指向函数(这个函数参数仅仅为一个 int 类型，函数返回值是 int 类型)的指针 fp
+```
+
+```cpp
+int test(int a)
+{
+    return a;
+}
+int main(int argc, const char * argv[])
+{
+    
+    int (*fp)(int a);
+    fp = test;
+    cout<<fp(2)<<endl;
+    return 0;
+}
+```
+
+**注意：**函数指针所指向的函数一定要保持函数的返回值类型，函数参数个数，类型一致
+
+typedef 定义可以简化函数指针的定义
+
+```cpp
+int test(int a)
+{
+    return a;
+}
+ 
+int main(int argc, const char * argv[])
+{
+    
+    typedef int (*fp)(int a);
+    fp f = test;
+    cout<<f(2)<<endl;
+    return 0;
+}
+```
+
+把函数作为参数传入另一个函数
+
+```cpp
+#include <iostream>
+template <typename T>
+bool ascending(T x, T y) {
+    return x > y; 
+}
+template <typename T>
+bool descending(T x, T y) {
+    return x < y;
+}
+template<typename T>
+void bubblesort(T *a, int n, bool(*cmpfunc)(T, T)){
+    bool sorted = false;
+    while(!sorted){
+        sorted = true;
+        for (int i=0; i<n-1; i++)
+            if (cmpfunc(a[i], a[i+1])) {
+                std::swap(a[i], a[i+1]);
+                sorted = false;
+            }
+        n--;
+    }
+}
+
+int main()
+{
+    int a[8] = {5,2,5,7,1,-3,99,56};
+    int b[8] = {5,2,5,7,1,-3,99,56};
+
+    bubblesort<int>(a, 8, ascending);
+
+    for (auto e:a) std::cout << e << " ";
+    std::cout << std::endl;
+
+    bubblesort<int>(b, 8, descending);
+
+    for (auto e:b) std::cout << e << " ";
+
+    return 0;
+}
+// -3 1 2 5 5 7 56 99 
+// 99 56 7 5 5 2 1 -3 [Finished in 0.4s]
+```
+
+设置默认函数
+
+```cpp
+void bubblesort(T *a, int n, bool(*cmpfunc)(T, T) = ascending)
+```
+
+利用函数指针，我们可以构成函数指针数组，更明确点的说法是构成指向函数的指针数组
+
+```cpp
+void t1(){cout<<"test1"<<endl;}
+void t2(){cout<<"test2"<<endl;}
+void t3(){cout<<"test3"<<endl;}
+ 
+int main(int argc, const char * argv[])
+{
+    
+    typedef void (*fp)(void);
+    fp b[] = {t1,t2,t3}; // b[] 为一个指向函数的指针数组
+    b[0](); // 利用指向函数的指针数组进行下标操作就可以进行函数的间接调用了
+    
+    return 0;
+}
+```
+
+类成员函数指针（member function pointer），是 C++ 语言的一类指针数据类型，用于存储一个指定类具有给定的形参列表与返回值类型的成员函数的访问信息
+
+基本上要注意的有两点：
+
+* 函数指针赋值要使用 &
+* 使用 `.*(实例对象)` 或者 `->*（实例对象指针）` 调用类成员函数指针所指向的函数
+
+类成员函数指针指向类中的非静态成员函数
+
+对于 nonstatic member function （非静态成员函数）取地址，获得该函数在内存中的实际地址
+
+对于 virtual function（虚函数）, 其地址在编译时期是未知的，所以对于 virtual member function（虚成员函数）取其地址，所能获得的只是一个索引值
+
+```cpp
+//指向类成员函数的函数指针
+#include <iostream>
+#include <cstdio>
+using namespace std;
+ 
+class A
+{
+    public:
+        A(int aa = 0):a(aa){}
+ 
+        ~A(){}
+ 
+        void setA(int aa = 1)
+        {
+            a = aa;
+        }
+        
+        virtual void print()
+        {
+            cout << "A: " << a << endl;
+        }
+ 
+        virtual void printa()
+        {
+            cout << "A1: " << a << endl;
+        }
+    private:
+        int a;
+};
+ 
+class B:public A
+{
+    public:
+        B():A(), b(0){}
+        
+        B(int aa, int bb):A(aa), b(bb){}
+ 
+        ~B(){}
+ 
+        virtual void print()
+        {
+            A::print();
+            cout << "B: " << b << endl;
+        }
+ 
+        virtual void printa()
+        {
+            A::printa();
+            cout << "B: " << b << endl;
+        }
+    private:
+        int b;
+};
+ 
+int main(void)
+{
+    A a;
+    B b;
+    void (A::*ptr)(int) = &A::setA;
+    A* pa = &a;
+    
+    //对于非虚函数，返回其在内存的真实地址
+    printf("A::set(): %p\n", &A::setA);
+    //对于虚函数， 返回其在虚函数表的偏移位置
+    printf("B::print(): %p\n", &A::print);
+    printf("B::print(): %p\n", &A::printa);
+ 
+    a.print();
+ 
+    a.setA(10);
+ 
+    a.print();
+ 
+    a.setA(100);
+ 
+    a.print();
+    //对于指向类成员函数的函数指针，引用时必须传入一个类对象的this指针，所以必须由类实体调用
+    (pa->*ptr)(1000);
+ 
+    a.print();
+ 
+    (a.*ptr)(10000);
+ 
+    a.print();
+    return 0;
+}
+```
+
+执行以上代码，输出结果为：
+
+```bash
+A::set(): 0x8048a38
+B::print(): 0x1
+B::print(): 0x5
+A: 0
+A: 10
+A: 100
+A: 1000
+A: 10000
+```
+
+类成员函数指针指向类中的静态成员函数
+
+```cpp
+#include <iostream>
+using namespace std;
+ 
+class A{
+public:
+    
+    //p1是一个指向非static成员函数的函数指针
+    void (A::*p1)(void);
+    
+    //p2是一个指向static成员函数的函数指针
+    void (*p2)(void);
+    
+    A(){
+        /*对
+         **指向非static成员函数的指针
+         **和
+         **指向static成员函数的指针
+         **的变量的赋值方式是一样的，都是&ClassName::memberVariable形式
+         **区别在于：
+         **对p1只能用非static成员函数赋值
+         **对p2只能用static成员函数赋值
+         **
+         **再有，赋值时如果直接&memberVariable，则在VS中报"编译器错误 C2276"
+         **参见：http://msdn.microsoft.com/zh-cn/library/850cstw1.aspx
+         */
+        p1 =&A::funa; //函数指针赋值一定要使用 &
+        p2 =&A::funb;
+        
+        //p1 =&A::funb;//error
+        //p2 =&A::funa;//error
+        
+        //p1=&funa;//error,编译器错误 C2276
+        //p2=&funb;//error,编译器错误 C2276
+    }
+    
+    void funa(void){
+        puts("A");
+    }
+    
+    static void funb(void){
+        puts("B");
+    }
+};
+ 
+int main()
+{
+    A a;
+    //p是指向A中非static成员函数的函数指针
+    void (A::*p)(void);
+    
+    (a.*a.p1)(); //打印 A
+    
+    //使用.*(实例对象)或者->*（实例对象指针）调用类成员函数指针所指向的函数
+    p = a.p1;
+    (a.*p)();//打印 A
+    
+    A *b = &a;
+    (b->*p)(); //打印 A
+    
+    /*尽管a.p2本身是个非static变量,但是a.p2是指向static函数的函数指针，
+     **所以下面这就话是错的!
+     */
+//    p = a.p2;//error
+    
+    void (*pp)(void);
+    pp = &A::funb;
+    pp(); //打印 B
+    
+    return 0;
+}
+```
+
+类成员函数指针与普通函数指针不是一码事。前者要用 .*与 ->* 运算符来使用，而后者可以用 * 运算符（称为"解引用"dereference，或称"间址"indirection）
+
+普通函数指针实际上保存的是函数体的开始地址，因此也称"代码指针"，以区别于 C/C++ 最常用的数据指针
+
+而类成员函数指针就不仅仅是类成员函数的内存起始地址，还需要能解决因为 C++ 的多重继承、虚继承而带来的类实例地址的调整问题，所以类成员函数指针在调用的时候一定要传入类实例对象
+
+**参考链接**
+
+1. [深入浅出——理解c/c++函数指针](https://zhuanlan.zhihu.com/p/37306637)
+2. [C++ 函数指针 & 类成员函数指针](https://www.runoob.com/w3cnote/cpp-func-pointer.html)
+
 #### 理解复合类型的声明
 
 ##### 指向指针的引用
