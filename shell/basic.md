@@ -1203,6 +1203,25 @@ echo "菜鸟教程官网地址：$url"
 ```s
 ```
 
-## 参考链接
+# TIPS
+
+## >/dev/null
+
+`>/dev/null` 是一个特殊的设备文件，这个文件接收到任何数据都会被丢弃，俗称“黑洞”
+
+如果希望执行某个命令，但又不希望在屏幕上显示输出结果，那么可以将输出重定向到 `/dev/null`
+
+`command >/dev/null 2>&1` 屏蔽 stdout 和 stderr
+
+```bash
+#! /bin/bash
+if command -v git >/dev/null 2>&1; then 
+  echo 'exists git' 
+else 
+  echo 'no exists git' 
+fi
+```
+
+# 参考链接
 
 1. [Shell 教程 | 菜鸟教程](https://www.runoob.com/linux/linux-shell.html)
