@@ -1,3 +1,4 @@
 # 2022-09-16
 
-> - [x] perf
+> - [ ] perf
+> - [ ] pushd popd
