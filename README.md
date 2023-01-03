@@ -2,18 +2,21 @@
 
 **Learning Note**
 
-* [MarkDown](markdown)
-* [C++](cpp)
-* [Compiler](compiler)
-* [Shell](shell)
-* [Git](git)
-* [Vim](vim)
+* [MarkDown](code/markdown/)
+* [C++](code/cpp/)
+* [Compiler](compiler/)
+* [Shell](linux/shell/)
+* [Git](code/git/)
+* [Vim](linux/vim/)
+* [Linux](linux/)
+* [Quant](quant/)
+* [VSCode](vscode/)
 
 **Working Note**
 
-* [Work](work)
+* [Work](work/)
 
 **Daily Note**
 
-* [Daily](daily)
-* [Essay](essay)
+* [Daily](daily/)
+* [Essay](essay/)
