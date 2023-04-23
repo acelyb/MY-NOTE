@@ -1532,7 +1532,13 @@ p = a;
 
 使用数组名作为常量指针是合法的，反之亦然。因此，`*(a + 4)` 是一种访问 `a[4]` 数据的合法方式
 
-### 参考链接
+# 可重入
+
+参考： 
+
+1. [一文理解可重入函数](https://zhuanlan.zhihu.com/p/280711576)
+
+# 参考链接
 
 1. [Linux中_ALIGN宏背后的原理](https://blog.csdn.net/wangpeihuixyz/article/details/40593619)
 2. [C 数据对齐算法](https://blog.csdn.net/sean_8180/article/details/84675716)

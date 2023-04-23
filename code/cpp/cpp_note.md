@@ -525,6 +525,50 @@ const int *p = nullptr;     // p 是一个指向整型常量的指针
 constexpr int *q = nullptr; // q 是一个指向整数的常量指针
 ```
 
+const 与 constexpr 变量之间的主要 difference（区别）是，const 变量的初始化可以推迟到运行时进行。 constexpr 变量必须在编译时进行初始化。 所有的 constexpr 变量都是 const
+
+A constexpr specifier used in an object declaration implies const.
+
+这里的object你可以理解为变量，意思是 constexpr 修饰的变量都会隐式添加一个 const 限定符。即 constexpr 添加的是顶层 const
+
+也就是说：
+
+```cpp
+// T 是任意类型
+constexpr T a = xxx;
+// 不考虑其他因素，在类型上等价于：
+T const a = xxx;
+```
+
+T 实际上可以填任意类型，包括指针
+
+```cpp
+// 原本的代码
+constexpr char *msg = "Hello, world!";
+// 实际上的效果，并非 const char *
+char * const msg = "Hello, world!";
+```
+
+下面一行的 msg 实际上是一个指向 char 的指针常量，而我们可以通过它任意修改被指向的字符串（当然这是未定义行为）。指针常量意味着我们不能把这个指针重新指向其他的对象，这个 const 作用在指针本身上，因此叫做顶层 const
+
+而字符串常量的类型是`const char[N]`，在表达式里退化为`const char *`，这表示一个指向常量字符串的指针，这里的 const 的底层的，因为它作用于被指向的对象而不是我们的指针自身
+
+constexpr 不是 const 的等价替代品，它只会添加顶层 const，不会添加底层 const
+
+所以 constexpr 的字符串常量应该这样写：
+
+```cpp
+constexpr const char *p = "Hello, world!";
+```
+
+或者你的编译环境支持c++17，我更推荐你这样写：
+
+```cpp
+#include <string_view>
+ 
+constexpr std::string_view msg = "Hello, world!";
+```
+
 ### 处理类型
 
 #### 类型别名
