@@ -512,6 +512,10 @@ template <class ELFT> void ObjFile<ELFT>::initializeSymbols() {
 }
 ```
 
+# 链接脚本
+
+Linker Script
+
 # 参考链接
 
 1. [链接器、链接过程及相关概念解析](https://blog.csdn.net/yueguangmuyu/article/details/116710102)
@@ -528,3 +532,5 @@ template <class ELFT> void ObjFile<ELFT>::initializeSymbols() {
 12. [LLVM中的lld程序流程分析](https://zhuanlan.zhihu.com/p/174077712)
 13. [How to add a new target to LLD](https://llvm.org/devmtg/2016-09/slides/Smith-NewLLDTarget.pdf)
 14. [The ELF, COFF and Wasm Linkers](https://lld.llvm.org/NewLLD.html)
+15. [链接脚本(Linker Scripts)语法和规则解析(自官方手册)](https://www.cnblogs.com/jianhua1992/p/16852784.html)
+16. [链接脚本（Linker Script）解析](https://blog.csdn.net/weixin_43083491/article/details/127095711)
