@@ -11,6 +11,7 @@
 * [Linux](linux/)
 * [Quant](quant/)
 * [VSCode](vscode/)
+* [Software Engineering](code/SoftwareEngineering/)
 
 **Working Note**
 
