@@ -51,6 +51,7 @@ graph TD
     subgraph parse
         parse --> Handledependentlibraries[Handle dependent libraries]
         Handledependentlibraries --> addDependentLibrary
+        addDependentLibrary --> initializeSymbols[[initializeSymbols]]
     end
 
     subgraph post parse work
@@ -102,27 +103,33 @@ classDiagram
     }
 
     class Symbol {
-
+        +InputFile *file
+        +resolve(const Undefined &other) void
+        +resolve(const CommonSymbol &other) void
+        +resolve(const Defined &other) void
+        +resolve(const LazyObject &other) void
+        +resolve(const SharedSymbol &other) void
+        +overwrite(Symbol &sym, Kind k) void
     }
 
     class Defined {
-
+        +overwrite(Symbol &sym) void
     }
 
     class Undefined {
-
+        +overwrite(Symbol &sym) void
     }
 
     class CommonSymbol {
-        
+        +overwrite(Symbol &sym) void
     }
 
     class SharedSymbol {
-        
+        +overwrite(Symbol &sym) void
     }
 
     class LazyObject {
-        
+        +overwrite(Symbol &sym) void
     }
 
     class InputFile {
@@ -132,7 +139,7 @@ classDiagram
     }
 
     class ELFFileBase {
-
+        #const void *elfSyms
     }
 
     class BitcodeFile {
@@ -202,6 +209,17 @@ Add symbols in File to the symbol table.
    2. Handle SHT_ARM_ATTRIBUTES sh_type section
    3. Handle SHT_GROUP sh_type section
 3. Read a symbol table（`ObjFile<ELFT>::initializeSymbols`）
+   1. Perform symbol resolution on non-local symbols
+      1. Push back SHN_UNDEF symbols
+      2. CommonSymbol（SHN_COMMON）
+      3. Handle global defined symbols. Defined::section will be set in postParse
+   2. Handle undefined symbols
+
+##### `ObjFile<ELFT>::initializeSymbols`
+
+`ArrayRef<Elf_Sym> eSyms = this->getELFSyms<ELFT>()`：获取 ELF section symbols
+
+调用 `resolve()` 刷新符号
 
 #### post parse
 
@@ -216,7 +234,7 @@ Do post parse work like checking duplicate symbols.
 
 1. postParse
 
-##### 初始化 sections and local symbols
+##### 初始化 sections and local symbols(`ObjFile<ELFT>::initSectionsAndLocalSyms`)
 
 ###### `ObjFile<ELFT>::initializeSections`
 
@@ -236,14 +254,19 @@ This checks duplicate symbols and may do symbol property merge in the future.
 
 1. 处理 STT_TLS symbol
 2. 处理 non-COMMON defined symbol
+3. 跳过未定义符号
+4. 处理 Defined symbol
+5. 跳过 STB_WEAK 符号
 
 ## TODO
 
-- [ ] 梳理符号表的处理过程（主要在 parseFile？）
-- [ ] `getObjMsg` 的调用时刻，和 `initSectionsAndLocalSyms` 关系？（getObjMsg may be called before ObjFile::initSectionsAndLocalSyms where local symbols are initialized.）
-- [ ] ObjFile 类和其他类的关系
-- [ ] parallelForEach
-- [ ] STT_TLS
-- [ ] struct Ctx 和 CommonLinkerContext 的关系
+1. [ ] 梳理符号表的处理过程（主要在 parseFile？）
+2. [ ] `getObjMsg` 的调用时刻，和 `initSectionsAndLocalSyms` 关系？（getObjMsg may be called before ObjFile::initSectionsAndLocalSyms where local symbols are initialized.）
+3. [ ] ObjFile 类和其他类的关系
+4. [ ] parallelForEach
+5. [ ] STT_TLS
+6. [ ] struct Ctx 和 CommonLinkerContext 的关系
+7. [ ] SmallVector
+8. [ ] StringRef
 
 ## 参考链接
