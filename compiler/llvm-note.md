@@ -13,6 +13,7 @@ graph TD
     LinkerDriverlinkerMain -.-> LinkerDriverlink[[LinkerDriver::link]]
     LinkerDriverlink -.-> elfparseFile[[elf::parseFile]]
     elfparseFile -.-> dopostparse[[do post parse work]]
+    dopostparse -.-> reportDuplicate
 
     subgraph elf::link
         elflink --> ctx[CommonLinkerContext]
@@ -167,7 +168,9 @@ classDiagram
 
 #### 构建符号表 symtab
 
-`SymbolTable()`
+`symtab = SymbolTable();`
+
+`symtab` 为全局符号表
 
 ### LinkerDriver::linkerMain
 
@@ -209,15 +212,20 @@ Add symbols in File to the symbol table.
    2. Handle SHT_ARM_ATTRIBUTES sh_type section
    3. Handle SHT_GROUP sh_type section
 3. Read a symbol table（`ObjFile<ELFT>::initializeSymbols`）
-   1. Perform symbol resolution on non-local symbols
+   1. Add global symbols to symtab
+   2. Perform symbol resolution on non-local symbols
       1. Push back SHN_UNDEF symbols
       2. CommonSymbol（SHN_COMMON）
       3. Handle global defined symbols. Defined::section will be set in postParse
-   2. Handle undefined symbols
+   3. Handle undefined symbols
 
 ##### `ObjFile<ELFT>::initializeSymbols`
 
 `ArrayRef<Elf_Sym> eSyms = this->getELFSyms<ELFT>()`：获取 ELF section symbols
+
+将全局符号放入全局符号表 `symtab`（Some entries have been filled by LazyObjFile）
+
+若有重复定义，在 post parse 时，全局符号表中相关符号对应的文件一定会与文件的符号表中对应的文件不一致
 
 调用 `resolve()` 刷新符号
 
@@ -246,6 +254,8 @@ create SHT_REL[A] sections
 
 ###### initialize local symbols
 
+new (symbols[i]) Undefined/Defined
+
 ##### postParse
 
 This checks duplicate symbols and may do symbol property merge in the future.
@@ -257,6 +267,23 @@ This checks duplicate symbols and may do symbol property merge in the future.
 3. 跳过未定义符号
 4. 处理 Defined symbol
 5. 跳过 STB_WEAK 符号
+6. 符号重复定义
+
+处理 Defined symbol
+
+```cpp
+if (sym.file == this) {
+  cast<Defined>(sym).section = sec;
+  continue;
+}
+```
+
+跳过 STB_WEAK 符号
+
+```cpp
+if (sym.binding == STB_WEAK || binding == STB_WEAK)
+  continue;
+```
 
 ## TODO
 
