@@ -13,3 +13,12 @@
 
 > 2023-04-28
 > - [ ] 链接脚本
+
+> 2023-05-16
+> - [ ] 自动微分
+
+<https://picture.iczhiku.com/weixin/message1585544421361.html>
+
+<https://zhuanlan.zhihu.com/p/395725922>
+
+<https://openmlsys.github.io/chapter_frontend_and_ir/overview_of_frontend.html>
