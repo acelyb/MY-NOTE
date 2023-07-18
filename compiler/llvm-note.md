@@ -41,7 +41,11 @@ graph TD
         hasDynSymTab --> deallazysymbol[deal symbols defined lazily]
         deallazysymbol --> handleLibcall[handle libcall symbols]
         handleLibcall --> dopostparse
-        dopostparse --> declareSymbols
+        dopostparse --> declareSymbols[declare linker script's symbols]
+        declareSymbols --> excludeLibs
+        excludeLibs --> addReservedSymbols
+        addReservedSymbols --> scanVersionScript[Apply version scripts]
+        scanVersionScript --> compileBitcodeFiles[LTO]
     end
 
     subgraph elf::parseFile
@@ -93,6 +97,9 @@ classDiagram
     }
 
     class LinkerDriver {
+        -std::unique_ptr~BitcodeCompiler~ lto
+        -std::vector~InputFile *~ files
+        +SmallVector~std::pair~StringRef, unsigned~, 0~ archiveFiles
         +linkerMain() void
         -createFiles() void
         -link() void
@@ -284,6 +291,10 @@ if (sym.file == this) {
 if (sym.binding == STB_WEAK || binding == STB_WEAK)
   continue;
 ```
+
+#### compileBitcodeFiles
+
+Do link-time optimization.
 
 ## TODO
 
