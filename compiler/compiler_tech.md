@@ -49,3 +49,21 @@ print(a is b) #False
 优点：能够提高一些字符串处理任务在时间和空间上的性能，非驻留比较效率为o(n)，驻留时比较效率为o(1)
 
 缺点：在创建或驻留字符串时的会花费更多的时间
+
+# 编译优化
+
+## 循环优化
+
+[编译优化 - 循环优化](https://zhuanlan.zhihu.com/p/458079943?utm_medium=social&utm_oi=52858527416320&s_r=0)
+
+## SSA
+
+[静态单一赋值](https://zhuanlan.zhihu.com/p/57787118)
+
+# SIMD / SIMT
+
+## 参考链接
+
+1. [SIMD与SIMT区别](https://zhuanlan.zhihu.com/p/389913100)
+2. [从现代GPU编程角度看SIMD与SIMT](https://zhuanlan.zhihu.com/p/113360369)
+3. [SIMD指令和SIMT指令有什么区别？](https://www.zhihu.com/question/273989958)
