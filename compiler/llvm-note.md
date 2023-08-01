@@ -45,7 +45,15 @@ graph TD
         declareSymbols --> excludeLibs
         excludeLibs --> addReservedSymbols
         addReservedSymbols --> scanVersionScript[Apply version scripts]
-        scanVersionScript --> compileBitcodeFiles[LTO]
+        scanVersionScript --> compileBitcodeFiles[[LTO]]
+        compileBitcodeFiles --> processArmCmseSymbols
+        processArmCmseSymbols --> redirectSymbols
+        redirectSymbols --> replaceCommonSymbols[[replaceCommonSymbols]]
+        replaceCommonSymbols --> aggregatesections[Aggregate sections]
+        aggregatesections --> stripsections[Strip sections]
+        stripsections --> writeDependencyFile
+        writeDependencyFile --> assignsections[Assign sections]
+        assignsections --> mergeinputsections[Merge/finalize input sections]
     end
 
     subgraph elf::parseFile
@@ -67,6 +75,10 @@ graph TD
     subgraph init Sections And Local Syms
         initSectionsAndLocalSyms --> initializeSections[[initializeSections]]
         initializeSections --> initializeLocalSyms[initialize local symbols]
+    end
+
+    subgraph LTO
+        compileBitcodeFiles --> compilebitcode[Compile bitcode files and replace bitcode symbols]
     end
 ```
 
@@ -166,6 +178,10 @@ classDiagram
 
     class SharedFile {
 
+    }
+
+    class Ctx {
+        +LinkerDriver driver
     }
 ```
 
@@ -296,6 +312,18 @@ if (sym.binding == STB_WEAK || binding == STB_WEAK)
 
 Do link-time optimization.
 
+#### replaceCommonSymbols
+
+Replaces common symbols with defined symbols reside in .bss sections.
+
+#### Aggregate sections
+
+Aggregate all input sections into one place.
+
+#### Strip sections
+
+删除二进制文件中多余部分
+
 ## TODO
 
 1. [ ] 梳理符号表的处理过程（主要在 parseFile？）
@@ -306,5 +334,10 @@ Do link-time optimization.
 6. [ ] struct Ctx 和 CommonLinkerContext 的关系
 7. [ ] SmallVector
 8. [ ] StringRef
+9. [ ] LTO
+10. [ ] symbol 类型(common/...)
+11. [ ] PLT / GOT
+12. [ ] OutputSection
+13. [ ] dyn_cast
 
 ## 参考链接
