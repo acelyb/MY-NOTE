@@ -341,3 +341,16 @@ Aggregate all input sections into one place.
 13. [ ] dyn_cast
 
 ## 参考链接
+
+# Front End
+
+## 参考链接
+
+1. [用LLVM开发新语言](https://llvm-tutorial-cn.readthedocs.io/en/latest/index.html#)
+2. [llvm入门教程-Kaleidoscope前端](https://zhuanlan.zhihu.com/p/430545662)
+
+# LLVM IR
+
+## 参考链接
+
+1. [LLVM IR入门指南](https://evian-zhang.github.io/llvm-ir-tutorial/)
