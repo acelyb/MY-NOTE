@@ -1,0 +1,15 @@
+# 代码子目录的数据/缓存（不纳入 git）
+research/gtja191_port/data_amt/
+research/gtja191_port/data_gbdt/
+research/gtja191_port/fundflow_offline.zip
+research/gtja191_port/__pycache__/
+research/gtja191_port/factors/__pycache__/
+research/gtja191_port/fundflow_offline/__pycache__/
+
+# 通用二进制/缓存
+*.parquet
+*.log
+*.pyc
+
+# 运行时输出产物
+research/gtja191_port/today_signal_output.txt
