@@ -1089,3 +1089,976 @@ Upload your SSH public key to your GitHub account?
 然后按照浏览器里的 GitHub 登录/授权流程走。
 
 完成后把终端最后几行输出贴给我，我可以继续帮你检查 gh、SSH、Git clone/push 是否全部配置正确。
+
+可以，而且 Windows 上我反而更推荐你采用 **PowerShell + Windows OpenSSH + Git for Windows + GitHub CLI** 这一套。这样不会像 Git Bash 那样额外引入一套 SSH 环境，尤其是你已经准备把 GitHub 用在 C++/CUDA 项目上，后面可能还会有多个 SSH Key、公司 GitLab、服务器等场景。
+
+下面我按照你之前 Linux 方案的思路，给你一套 **Windows 10/11 可以直接执行的完整方案**。
+
+---
+
+# 一、最终你应该得到什么
+
+配置完成后：
+
+```text
+Windows
+│
+├── Git
+│   ├── clone
+│   ├── pull
+│   ├── commit
+│   └── push
+│
+├── GitHub CLI (gh)
+│   ├── gh repo
+│   ├── gh pr
+│   ├── gh issue
+│   └── gh auth
+│
+└── Windows OpenSSH
+    └── SSH Key
+         ↓
+      GitHub
+```
+
+推荐目录：
+
+```text
+C:\Users\你的用户名\.ssh\
+├── id_ed25519_github
+├── id_ed25519_github.pub
+├── known_hosts
+└── config
+```
+
+其中：
+
+```text
+id_ed25519_github
+```
+
+是私钥，绝不能上传。
+
+```text
+id_ed25519_github.pub
+```
+
+是公钥，添加到 GitHub。
+
+---
+
+# 二、先确认 Windows 环境
+
+建议使用：
+
+* Windows 10 22H2 或 Windows 11
+* PowerShell
+* Windows Terminal
+
+先打开 **PowerShell**。
+
+执行：
+
+```powershell
+$PSVersionTable.PSVersion
+```
+
+然后：
+
+```powershell
+Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsArchitecture
+```
+
+---
+
+# 三、安装 Git
+
+我建议优先使用官方 Git for Windows。
+
+Git 官方目前提供 Windows Installer，也支持 `winget`：
+
+```powershell
+winget install --id Git.Git -e --source winget
+```
+
+这是 Git 官方 Windows 安装页当前提供的安装方式。([Git][1])
+
+安装完成后**重新打开 PowerShell**。
+
+检查：
+
+```powershell
+git --version
+```
+
+例如：
+
+```text
+git version 2.55.0.windows.1
+```
+
+---
+
+# 四、安装 GitHub CLI
+
+如果你的 Windows 已经有 `winget`，优先用它。
+
+先：
+
+```powershell
+winget search GitHub CLI
+```
+
+然后安装：
+
+```powershell
+winget install --id GitHub.cli -e --source winget
+```
+
+安装之后：
+
+```powershell
+gh --version
+```
+
+GitHub CLI 官方说明中，`gh` 就是用于从终端操作 GitHub 的命令行工具。([GitHub CLI][2])
+
+---
+
+# 五、优先使用 Windows 自带 OpenSSH
+
+这是 Windows 上和 Linux 最大的区别。
+
+先检查：
+
+```powershell
+ssh -V
+```
+
+以及：
+
+```powershell
+Get-Command ssh
+```
+
+理想情况：
+
+```text
+C:\Windows\System32\OpenSSH\ssh.exe
+```
+
+如果是这个，说明你正在使用 Windows 原生 OpenSSH。
+
+GitHub 官方特别提醒过：Windows 上可能同时存在：
+
+```text
+Windows OpenSSH
+Git for Windows 自带的 OpenSSH
+```
+
+两套 SSH/ssh-agent 混用容易导致 `git push` 时反复要求输入 passphrase。GitHub 官方建议在这种情况下强制 Git 使用 Windows 系统 OpenSSH。([GitHub Docs][3])
+
+所以我推荐我们从一开始就统一到：
+
+```text
+Windows OpenSSH
+```
+
+---
+
+# 六、启用 Windows ssh-agent
+
+以**管理员身份**打开 PowerShell。
+
+执行：
+
+```powershell
+Get-Service ssh-agent
+```
+
+然后：
+
+```powershell
+Set-Service -Name ssh-agent -StartupType Manual
+Start-Service ssh-agent
+```
+
+检查：
+
+```powershell
+Get-Service ssh-agent
+```
+
+应该看到：
+
+```text
+Status   Name
+------   ----
+Running  ssh-agent
+```
+
+GitHub 官方 Windows 文档也是这种方式启动 Windows 的 `ssh-agent` 服务。([GitHub Docs][3])
+
+---
+
+# 七、创建 GitHub 专用 SSH Key
+
+回到普通 PowerShell，不需要管理员权限。
+
+先：
+
+```powershell
+Test-Path "$HOME\.ssh"
+```
+
+如果没有：
+
+```powershell
+New-Item -ItemType Directory -Force "$HOME\.ssh"
+```
+
+然后：
+
+```powershell
+ssh-keygen -t ed25519 `
+    -C "你的GitHub邮箱" `
+    -f "$HOME\.ssh\id_ed25519_github"
+```
+
+例如：
+
+```powershell
+ssh-keygen -t ed25519 `
+    -C "xxx@example.com" `
+    -f "$HOME\.ssh\id_ed25519_github"
+```
+
+它会问：
+
+```text
+Enter passphrase:
+Enter same passphrase again:
+```
+
+**建议设置 passphrase。**
+
+GitHub 官方推荐 Ed25519，并明确建议使用 passphrase 保护私钥。([GitHub Docs][4])
+
+最终：
+
+```text
+C:\Users\你的用户名\.ssh\
+    id_ed25519_github
+    id_ed25519_github.pub
+```
+
+---
+
+# 八、把私钥加入 Windows ssh-agent
+
+执行：
+
+```powershell
+ssh-add "$HOME\.ssh\id_ed25519_github"
+```
+
+输入刚才设置的 passphrase。
+
+检查：
+
+```powershell
+ssh-add -l
+```
+
+应该看到：
+
+```text
+256 SHA256:xxxxxxxxxxxxxxxx... id_ed25519_github (ED25519)
+```
+
+---
+
+# 九、生成 SSH config
+
+这是我很推荐你做的，尤其是以后你可能还有：
+
+```text
+GitHub
+GitLab
+公司服务器
+云服务器
+```
+
+打开：
+
+```powershell
+notepad "$HOME\.ssh\config"
+```
+
+写：
+
+```text
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_github
+    IdentitiesOnly yes
+```
+
+保存。
+
+这里的：
+
+```text
+IdentitiesOnly yes
+```
+
+很重要。
+
+它可以避免你机器上如果存在：
+
+```text
+id_rsa
+id_ed25519
+id_ed25519_github
+id_ed25519_gitlab
+id_ed25519_server
+```
+
+时，SSH 把所有 key 都拿去试。
+
+---
+
+# 十、让 Git 明确使用 Windows OpenSSH
+
+这是 Windows 特别值得做的一步：
+
+```powershell
+git config --global core.sshCommand "C:/Windows/System32/OpenSSH/ssh.exe"
+```
+
+然后：
+
+```powershell
+git config --global gpg.ssh.program "C:/Windows/System32/OpenSSH/ssh-keygen.exe"
+```
+
+这是 GitHub 官方针对 Windows 上 Windows OpenSSH 与 Git for Windows SSH 混用问题给出的处理方式。([GitHub Docs][3])
+
+检查：
+
+```powershell
+git config --global --get core.sshCommand
+```
+
+应该：
+
+```text
+C:/Windows/System32/OpenSSH/ssh.exe
+```
+
+---
+
+# 十一、把公钥添加到 GitHub
+
+直接查看：
+
+```powershell
+Get-Content "$HOME\.ssh\id_ed25519_github.pub"
+```
+
+得到：
+
+```text
+ssh-ed25519 AAAAC3... xxx@example.com
+```
+
+复制整行。
+
+进入：
+
+```text
+GitHub
+→ Settings
+→ SSH and GPG keys
+→ New SSH key
+```
+
+Title 建议：
+
+```text
+Windows 11 - Home
+```
+
+或者：
+
+```text
+Windows 11 - Development PC
+```
+
+Key type：
+
+```text
+Authentication Key
+```
+
+粘贴公钥。
+
+**不要把下面这个文件上传：**
+
+```text
+id_ed25519_github
+```
+
+那个是私钥。
+
+GitHub 官方文档要求生成 SSH key 后，把公钥添加到账户，之后才能通过 SSH 认证。([GitHub Docs][4])
+
+---
+
+# 十二、测试 SSH
+
+执行：
+
+```powershell
+ssh -T git@github.com
+```
+
+第一次可能看到：
+
+```text
+The authenticity of host 'github.com' can't be established.
+ED25519 key fingerprint is ...
+```
+
+GitHub 官方当前公布的 Ed25519 host key fingerprint 是：
+
+```text
+SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU
+```
+
+所以看到它可以确认后输入：
+
+```text
+yes
+```
+
+([GitHub Docs][5])
+
+成功应该是：
+
+```text
+Hi YOUR_USERNAME! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+注意：
+
+```text
+exit code = 1
+```
+
+本身并不代表失败；GitHub 官方说明这个测试命令成功认证后也会以 1 退出，因为 GitHub 不提供 shell。([GitHub Docs][6])
+
+---
+
+# 十三、然后配置 Git
+
+```powershell
+git config --global user.name "你的名字"
+git config --global user.email "你的GitHub邮箱"
+```
+
+检查：
+
+```powershell
+git config --global --list
+```
+
+---
+
+# 十四、登录 GitHub CLI
+
+现在：
+
+```powershell
+gh auth login --git-protocol ssh --web
+```
+
+选择：
+
+```text
+GitHub.com
+```
+
+然后：
+
+```text
+SSH
+```
+
+然后浏览器登录/授权。
+
+完成后：
+
+```powershell
+gh auth status
+```
+
+应该看到类似：
+
+```text
+github.com
+  ✓ Logged in to github.com account xxx
+  ✓ Git operations for github.com configured to use ssh
+```
+
+GitHub CLI 官方支持 `gh auth login` 进行认证，并支持指定 Git 操作使用 SSH。([GitHub CLI][2])
+
+---
+
+# 十五、验证整个链路
+
+建议全部检查：
+
+```powershell
+git --version
+```
+
+```powershell
+gh --version
+```
+
+```powershell
+ssh -V
+```
+
+```powershell
+ssh-add -l
+```
+
+```powershell
+ssh -T git@github.com
+```
+
+```powershell
+gh auth status
+```
+
+然后真正测试：
+
+```powershell
+git clone git@github.com:torvalds/linux.git
+```
+
+如果能成功：
+
+```text
+Receiving objects...
+Resolving deltas...
+```
+
+说明：
+
+```text
+Windows
+ ↓
+Git
+ ↓
+Windows OpenSSH
+ ↓
+SSH Key
+ ↓
+GitHub
+```
+
+完整打通了。
+
+---
+
+# 十六、Windows + 国内网络：先别折腾镜像
+
+这个原则和 Linux 完全一样：
+
+> **先判断到底是 GitHub 网络问题，还是 SSH 身份认证问题。**
+
+测试：
+
+```powershell
+Resolve-DnsName github.com
+```
+
+HTTPS：
+
+```powershell
+curl.exe -I https://github.com
+```
+
+SSH 22：
+
+```powershell
+Test-NetConnection github.com -Port 22
+```
+
+SSH 443：
+
+```powershell
+Test-NetConnection ssh.github.com -Port 443
+```
+
+---
+
+# 十七、如果 22 端口不通
+
+GitHub 官方支持 SSH over HTTPS port。
+
+直接测试：
+
+```powershell
+ssh -T -p 443 git@ssh.github.com
+```
+
+官方明确说明：
+
+```text
+hostname = ssh.github.com
+port = 443
+```
+
+而不是：
+
+```text
+github.com:443
+```
+
+([GitHub Docs][7])
+
+如果成功：
+
+```text
+Hi YOUR_USERNAME! You've successfully authenticated...
+```
+
+那么建议修改：
+
+```powershell
+notepad "$HOME\.ssh\config"
+```
+
+改成：
+
+```text
+Host github.com
+    HostName ssh.github.com
+    Port 443
+    User git
+    IdentityFile ~/.ssh/id_ed25519_github
+    IdentitiesOnly yes
+```
+
+之后仍然使用正常命令：
+
+```powershell
+ssh -T git@github.com
+```
+
+Git 不需要改变：
+
+```text
+git@github.com:owner/repo.git
+```
+
+只是底层 SSH 已经变成：
+
+```text
+ssh.github.com:443
+```
+
+GitHub 官方也明确推荐这种方法应对防火墙阻止 SSH 的情况。([GitHub Docs][7])
+
+---
+
+# 十八、Windows 下代理怎么处理？
+
+如果你本身有合法的 HTTP/HTTPS 代理，例如：
+
+```text
+127.0.0.1:7890
+```
+
+Git 的 HTTPS 流量可以设置：
+
+```powershell
+git config --global http.proxy http://127.0.0.1:7890
+git config --global https.proxy http://127.0.0.1:7890
+```
+
+检查：
+
+```powershell
+git config --global --get http.proxy
+git config --global --get https.proxy
+```
+
+但要注意：
+
+**这两个配置主要影响 Git 的 HTTP/HTTPS 访问，不等于 SSH 自动经过代理。**
+
+如果你已经用：
+
+```text
+SSH over 443
+```
+
+一般不需要额外给 Git 配 HTTP proxy。
+
+---
+
+# 十九、一个非常重要的安全原则
+
+我还是建议：
+
+```text
+代码下载/push
+        ↓
+      SSH
+        ↓
+    github.com
+```
+
+而不是：
+
+```text
+Git
+ ↓
+第三方 GitHub Proxy
+ ↓
+GitHub
+```
+
+尤其是涉及：
+
+```text
+private repository
+git push
+公司代码
+SSH credentials
+PAT
+```
+
+不要把凭据交给不熟悉的第三方代理。
+
+---
+
+# 二十、Windows 上我建议的最终配置
+
+```text
+C:\Users\你的用户名\
+│
+├── .ssh\
+│   ├── config
+│   ├── id_ed25519_github
+│   ├── id_ed25519_github.pub
+│   └── known_hosts
+│
+└── ...
+```
+
+`config`：
+
+```text
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_github
+    IdentitiesOnly yes
+```
+
+如果 22 不通：
+
+```text
+Host github.com
+    HostName ssh.github.com
+    Port 443
+    User git
+    IdentityFile ~/.ssh/id_ed25519_github
+    IdentitiesOnly yes
+```
+
+Git：
+
+```text
+git
+ ↓
+C:/Windows/System32/OpenSSH/ssh.exe
+ ↓
+~/.ssh/id_ed25519_github
+ ↓
+github.com
+```
+
+GitHub CLI：
+
+```text
+gh
+ ↓
+GitHub OAuth
+```
+
+---
+
+# 二十一、一份可以直接复制执行的 PowerShell 版本
+
+假设你已经装好了 `winget`：
+
+```powershell
+# ==========================================
+# 1. 安装 Git
+# ==========================================
+
+winget install --id Git.Git -e --source winget
+
+
+# ==========================================
+# 2. 安装 GitHub CLI
+# ==========================================
+
+winget install --id GitHub.cli -e --source winget
+```
+
+**重新打开 PowerShell** 后：
+
+```powershell
+# ==========================================
+# 3. 创建 SSH 目录
+# ==========================================
+
+New-Item -ItemType Directory -Force "$HOME\.ssh"
+
+
+# ==========================================
+# 4. 生成 GitHub 专用 SSH Key
+# ==========================================
+
+ssh-keygen -t ed25519 `
+    -C "你的GitHub邮箱" `
+    -f "$HOME\.ssh\id_ed25519_github"
+
+
+# ==========================================
+# 5. 启动 Windows ssh-agent
+# ==========================================
+
+# 注意：这里需要管理员 PowerShell
+Set-Service -Name ssh-agent -StartupType Manual
+Start-Service ssh-agent
+
+
+# ==========================================
+# 6. 添加 SSH 私钥
+# ==========================================
+
+ssh-add "$HOME\.ssh\id_ed25519_github"
+
+
+# ==========================================
+# 7. 创建 SSH config
+# ==========================================
+
+@"
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_github
+    IdentitiesOnly yes
+"@ | Set-Content "$HOME\.ssh\config"
+
+
+# ==========================================
+# 8. 强制 Git 使用 Windows OpenSSH
+# ==========================================
+
+git config --global core.sshCommand `
+    "C:/Windows/System32/OpenSSH/ssh.exe"
+
+git config --global gpg.ssh.program `
+    "C:/Windows/System32/OpenSSH/ssh-keygen.exe"
+
+
+# ==========================================
+# 9. Git 用户信息
+# ==========================================
+
+git config --global user.name "你的名字"
+git config --global user.email "你的GitHub邮箱"
+
+
+# ==========================================
+# 10. 查看公钥
+# ==========================================
+
+Get-Content "$HOME\.ssh\id_ed25519_github.pub"
+
+
+# ==========================================
+# 11. 测试 SSH
+# ==========================================
+
+ssh -T git@github.com
+
+
+# ==========================================
+# 12. 登录 GitHub CLI
+# ==========================================
+
+gh auth login --git-protocol ssh --web
+
+
+# ==========================================
+# 13. 最终检查
+# ==========================================
+
+git --version
+gh --version
+ssh -V
+ssh-add -l
+gh auth status
+```
+
+---
+
+## 还有一个我特别建议你做的调整
+
+你前面已经把 **Linux 的 GitHub + SSH** 配好了。现在如果 Windows 和 Linux 都是你的开发机器，我建议不要两边共用同一把 SSH 私钥，而是：
+
+```text
+Linux
+    ~/.ssh/id_ed25519_github_linux
+
+Windows
+    ~/.ssh/id_ed25519_github_windows
+```
+
+GitHub 账号里登记两把：
+
+```text
+GitHub SSH Keys
+
+✓ Linux Development
+✓ Windows Development
+```
+
+这样以后某台机器丢失、重装或者怀疑泄漏，只需要**删除这一台机器对应的 key**，另一台完全不受影响。这比把同一个私钥复制到多台机器安全得多。GitHub 也提供了 SSH key 审计/查看功能，可以查看和管理已登记的 key。([GitHub Docs][8])
+
+另外，Windows 上还有一个实用细节：**如果你主要使用 PowerShell/Windows Terminal，就优先使用系统 OpenSSH；如果使用 Git Bash，也可以，但要特别注意 Git for Windows 自带 `ssh.exe` 和 Windows `ssh-agent` 的冲突。** GitHub 官方专门记录了这个问题。([GitHub Docs][3])
+
+如果你准备在 Windows 上用 **VS Code + CMake + C++/CUDA + GitHub**，下一步最好把 Git 的 `core.autocrlf`、`.gitattributes`、`.gitignore`、Git LFS、SSH 多账号以及 VS Code 的 Git 集成一起配置好，否则 Windows 和 Linux 两边协作时很容易出现换行符、权限位、二进制文件等问题。
+
+[1]: https://git-scm.com/install/windows?utm_source=chatgpt.com "Git - Install for Windows"
+[2]: https://cli.github.com/manual/?utm_source=chatgpt.com "Manual | GitHub CLI"
+[3]: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?platform=windows&utm_source=chatgpt.com "Generating a new SSH key and adding it to the ssh-agent - GitHub Docs"
+[4]: https://docs.github.com/zh/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?utm_source=chatgpt.com "生成新的 SSH 密钥并将其添加到 ssh-agent - GitHub 文档"
+[5]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints?utm_source=chatgpt.com "GitHub's SSH key fingerprints - GitHub Docs"
+[6]: https://docs.github.com/en/authentication/connecting-to-github-with-ssh/testing-your-ssh-connection?utm_source=chatgpt.com "Testing your SSH connection - GitHub Docs"
+[7]: https://docs.github.com/en/authentication/troubleshooting-ssh/using-ssh-over-the-https-port?utm_source=chatgpt.com "Using SSH over the HTTPS port - GitHub Docs"
+[8]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/reviewing-your-ssh-keys?utm_source=chatgpt.com "Reviewing your SSH keys - GitHub Docs"
+
