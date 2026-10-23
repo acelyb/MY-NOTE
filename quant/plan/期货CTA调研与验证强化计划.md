@@ -1,7 +1,18 @@
 # 期货 CTA 线调研与验证强化计划（junior_quant）
 
+> **状态（2026-10-30 核实）：六步全部落地。** 逐项核验见
+> `docs/futures/期货CTA_调研测试台账.md`。
+> 第一步 ✅ 绝对基准（−1.603 已解释，×2 成本列已出）／
+> 第二步 ✅ 切 built（13.90% 方向不一致，§2.4）／
+> 第三步 ✅ fail-loud + 证据包（**附带挖出并修复引擎 carry 注入泄漏**，0.8pp 顺序敏感，受污染数字已重跑）／
+> 第四步 ✅ 集成不优（ΔIR +0.004 冗余），**否**，参数曲面记录在案，250 单点维持／
+> 第五步 ✅ 裁定启用 **linear 15%/0.25**（MDD −19.5%→−12.5%）；w_min 三态逐位相同（地板从未触发）／
+> 第六步 ✅ 换危机尾部尺子复评后**仍否 → 永久关闭**，软形态集中度提示保留。
+>
+> 回归测试：`tests/futures` **351 例全绿**（下方"104 例全绿"为 2026-09-30 当时的自述口径，现已远超；当前环境可实际跑通）。
+
 > 建立于 2026-09-30。结构同《ML线性基准与验证强化计划》:第一章调研(机构 CTA 怎么做、格局怎么形成),第二章起把每条调研发现对照 junior_quant 期货线实际代码,导出待改进项与实施步骤。
-> **证据边界**:第一章机构实践与文献结论(MOP 2012;KMPV 2018;Hurst-Ooi-Pedersen 2017;Fung-Hsieh 2001;Turtle 时代行业史)为公开知识调研,非 junior_quant 代码事实;凡涉及 junior_quant 现状的表述均为 2026-09-30 实读代码(`strategies/cta/`、`backtest/futures_walk_forward.py`、`data/fetchers/fetcher_futures.py`、`risk/futures_risk.py`、`portfolio/futures_sizing.py`、`scripts/futures_*.py`)与 `docs/futures/` 三份文档核实,引用到文件行号。回归测试"104 例全绿"为文档自述,本轮环境无 pytest 未复跑。
+> **证据边界**:第一章机构实践与文献结论(MOP 2012;KMPV 2018;Hurst-Ooi-Pedersen 2017;Fung-Hsieh 2001;Turtle 时代行业史)为公开知识调研,非 junior_quant 代码事实;凡涉及 junior_quant 现状的表述均为 2026-09-30 实读代码(`strategies/cta/`、`backtest/futures_walk_forward.py`、`data/fetchers/fetcher_futures.py`、`risk/futures_risk.py`、`portfolio/futures_sizing.py`、`scripts/futures_*.py`)与 `docs/futures/` 三份文档核实,引用到文件行号。回归测试"104 例全绿"为文档自述,本轮环境无 pytest 未复跑——**已于 2026-10-30 复跑，见顶部状态块**。
 > **与既有 TODO 的关系**:`docs/futures/期货CTA_设计.md` §10 已列季节性因子、动态权重、品种起点对齐、carry 生产裁定、健康卡残差检验/尾部相关——本计划**不重复规划这些**,只补其未覆盖的缺口,并在需要处挂接。
 > **与股票线计划的关系**:互补。两条线共用"调研→差距→步骤"的框架,但缺口不同:股票线缺的是"验证的统计纪律"(多种子/试验登记),期货线缺的是"信号层的稳健形态 + 数据口径一致性 + 风控的政策完整性"。
 

@@ -21,8 +21,15 @@
 - [gtja191_port](research/gtja191_port/) — Python 移植实证（~200 因子 + 验证脚本）
 
 ### futures/ — 期货CTA线
-- [期货量化调研](futures/期货量化调研.md) — 业界流程/因子/风控/系统构建
+- [期货量化调研](futures/期货量化调研.md) — 业界流程/因子/风控/系统构建；附录 B.1 说明为何没有 CTA 版 191 及替代物
 - [期货因子_业界通行提法_旁证](futures/期货因子_业界通行提法_旁证.md) — 因子桶的旁证清单（线索源）
+- [阅读笔记](futures/reading_experience.md) — 因子与策略文章摘录
+
+### stock/ — 股票线笔记
+- [因子想法](stock/idea.md) — 待实现因子草稿
+- [阅读笔记](stock/reading_experience.md) — 因子与策略文章摘录
 
 ### plan/ — 落地计划
 - [全市场选股域迁移计划](plan/全市场选股域迁移计划.md) — csi_all 全频谱选股工程
+- [ML线性基准与验证强化计划](plan/ML线性基准与验证强化计划.md) — 机构 ML 格局调研 → junior_quant 验证纪律五步
+- [期货CTA调研与验证强化计划](plan/期货CTA调研与验证强化计划.md) — 机构 CTA 因子层认知地图 → junior_quant 六步
